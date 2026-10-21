@@ -1,0 +1,49 @@
+{
+  "name": "المدير AI - نظام المحاسبة",
+  "short_name": "المدير AI",
+  "description": "نظام محاسبة ذكي للشركات والمحلات",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#2c3e50",
+  "theme_color": "#e67e22",
+  "icons": [
+    {
+      "src": "icons/icon-96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "scope": "/",
+  "orientation": "portrait",
+  "lang": "ar",
+  "dir": "rtl",
+  "categories": [
+    "business",
+    "finance",
+    "productivity"
+  ]
+}

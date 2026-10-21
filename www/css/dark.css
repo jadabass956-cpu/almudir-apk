@@ -1,0 +1,132 @@
+/* ═══════════════════════════════════════════════════════════════
+   🌙 المدير AI — إضافات الوضع الليلي
+   ═══════════════════════════════════════════════════════════════
+   ملاحظة: معظم المتغيرات موجودة في tokens.css
+   هذا الملف يضيف تعديلات خاصة على المكونات
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ───────────────────────────────────────────────────────────────
+   🌙 الوضع الليلي — التلقائي (حسب تفضيل النظام)
+   يُستخدم فقط إذا لم يختر المستخدم يدوياً
+   ─────────────────────────────────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not([data-theme="dark"]) {
+    color-scheme: dark;
+  }
+}
+
+/* ───────────────────────────────────────────────────────────────
+   🌙 تعديلات على المكونات في الوضع الليلي
+   ─────────────────────────────────────────────────────────────── */
+[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+/* الأزرار — تخفيف الحدة */
+[data-theme="dark"] .btn-secondary {
+  background: var(--bg-card);
+  border-color: var(--border-color-strong);
+}
+
+[data-theme="dark"] .btn-secondary:hover {
+  background: var(--bg-hover);
+}
+
+/* البطاقات — حدود أوضح */
+[data-theme="dark"] .card {
+  border-color: var(--border-color);
+}
+
+/* الحقول — خلفية داكنة */
+[data-theme="dark"] .input,
+[data-theme="dark"] .textarea,
+[data-theme="dark"] .select {
+  background: var(--bg-page);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .input:focus,
+[data-theme="dark"] .textarea:focus,
+[data-theme="dark"] .select:focus {
+  background: var(--bg-card);
+}
+
+/* الجداول */
+[data-theme="dark"] .table thead th {
+  background: var(--bg-page);
+}
+
+[data-theme="dark"] .table-wrapper {
+  border-color: var(--border-color);
+}
+
+/* النوافذ المنبثقة */
+[data-theme="dark"] .modal {
+  border: var(--border-width) solid var(--border-color);
+}
+
+/* التبويبات */
+[data-theme="dark"] .tabs {
+  border-bottom-color: var(--border-color);
+}
+
+/* البطاقات والحدود — تحسين التباين */
+[data-theme="dark"] .card-header,
+[data-theme="dark"] .card-footer,
+[data-theme="dark"] .modal-header,
+[data-theme="dark"] .modal-footer {
+  border-color: var(--border-color);
+}
+
+/* شاشة التحميل */
+[data-theme="dark"] .spinner {
+  border-color: var(--border-color-strong);
+  border-top-color: var(--color-primary);
+}
+
+/* روابط */
+[data-theme="dark"] a {
+  color: var(--color-primary-light);
+}
+
+[data-theme="dark"] a:hover {
+  color: var(--color-primary-lighter);
+}
+
+/* صور — تخفيف السطوع قليلاً */
+[data-theme="dark"] img:not([data-no-dim]) {
+  opacity: 0.92;
+}
+
+/* ───────────────────────────────────────────────────────────────
+   🎨 تطبيقات على العناصر الشائعة (body, html)
+   ─────────────────────────────────────────────────────────────── */
+[data-theme="dark"] body {
+  background: var(--bg-page);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] hr {
+  border-color: var(--border-color);
+}
+
+/* ───────────────────────────────────────────────────────────────
+   📊 Scrollbar في الوضع الليلي
+   ─────────────────────────────────────────────────────────────── */
+[data-theme="dark"] ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: var(--bg-page);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: var(--border-color-strong);
+  border-radius: var(--radius-full);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}

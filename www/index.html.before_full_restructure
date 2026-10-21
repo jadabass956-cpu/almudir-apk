@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JASOFT - نظام المحاسبة</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<!-- Firebase App (core) -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<!-- Firebase Auth -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<!-- Firebase Firestore -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <link rel="stylesheet" href="css/style.css?v=1788965265">
+</head>
+<body>
+    <!-- شاشة تسجيل الدخول -->
+    <div id="authSection" style="width:100%; max-width:400px; margin:20px auto; background:white; padding:25px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.1); text-align:center;">
+        <h2 style="color:#2c3e50; margin-bottom:20px;">تسجيل الدخول</h2>
+        <input type="email" id="authEmail" placeholder="البريد الإلكتروني" style="margin-bottom:10px;">
+        <input type="password" id="authPassword" placeholder="كلمة المرور" style="margin-bottom:10px;">
+        <button onclick="login()" style="width:100%; padding:10px; background:#3498db; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">دخول</button>
+        <p style="margin:10px 0; font-size:14px; color:#555;">ليس لديك حساب؟ <a href="#" onclick="showRegister()" style="color:#e67e22; font-weight:bold;">إنشاء حساب جديد</a></p>
+        <div id="loginError" style="color:red; font-size:13px;"></div>
+    </div>
+
+    <!-- شاشة إنشاء حساب -->
+    <div id="registerSection" style="display:none; width:100%; max-width:400px; margin:20px auto; background:white; padding:25px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.1); text-align:center;">
+        <h2 style="color:#2c3e50; margin-bottom:20px;">إنشاء حساب جديد</h2>
+        <input type="text" id="regFullName" placeholder="الاسم الثلاثي" style="margin-bottom:10px;">
+        <input type="tel" id="regPhone" placeholder="رقم الهاتف" style="margin-bottom:10px;">
+        <input type="email" id="regEmail" placeholder="البريد الإلكتروني" style="margin-bottom:10px;">
+        <input type="password" id="regPassword" placeholder="كلمة المرور" style="margin-bottom:10px;">
+        <input type="text" id="regGovernorate" placeholder="المحافظة" style="margin-bottom:10px;">
+        <input type="text" id="regTown" placeholder="البلدة" style="margin-bottom:10px;">
+        <input type="text" id="regDistrict" placeholder="الحي" style="margin-bottom:10px;">
+        <select id="regBusinessType" style="margin-bottom:10px;">
+            <option>محل تجاري</option>
+            <option>شركة</option>
+            <option>مركز</option>
+        </select>
+        <label style="display:flex; align-items:center; gap:5px; margin-bottom:10px; font-size:14px;">
+            <input type="checkbox" id="regAgree" style="width:auto;"> أوافق على شروط الخدمة
+        </label>
+        <button onclick="register()" style="width:100%; padding:10px; background:#27ae60; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">إنشاء الحساب</button>
+        <p style="margin-top:10px; font-size:14px; color:#555;">لديك حساب؟ <a href="#" onclick="showLogin()" style="color:#3498db;">تسجيل الدخول</a></p>
+        <div id="registerError" style="color:red; font-size:13px;"></div>
+    </div>
+
+    <!-- شاشة الاشتراك -->
+    <div id="subscriptionSection" style="display:none; width:100%; max-width:400px; margin:20px auto; background:white; padding:25px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.1); text-align:center;">
+        <h2 style="color:#e74c3c;">انتهت الفترة التجريبية</h2>
+        <p style="margin:15px 0; color:#555;">يرجى الاشتراك الشهري للمتابعة.</p>
+        <p style="font-weight:bold;">للاشتراك، تواصل مع المالك على الرقم: <span dir="ltr">+963xxxxxxxx</span></p>
+        <button onclick="logout()" style="margin-top:15px; padding:10px 20px; background:#e74c3c; color:white; border:none; border-radius:8px; cursor:pointer;">تسجيل الخروج</button>
+    </div>
+
+    <!-- الحاوية الرئيسية -->
+    <div class="container" id="mainContainer" style="display:none;">
+        <div class="header">
+            <button id="hamburgerBtn" onclick="toggleMenu()" style="position:fixed; top:10px; left:10px; width:45px; height:45px; background:#e67e22; color:white; border:none; border-radius:8px; font-size:22px; z-index:99999;">☰</button>
+            <div class="logo">
+                <h1>JASOFT</h1>
+                <p>نظام المحاسبة المتكامل</p>
+            </div>
+            <button class="menu-toggle" id="menuToggle" onclick="toggleMenu()">☰</button>
+        </div>
+
+        <div class="main-nav" id="mainNav">
+            <button class="active" data-page="materials" onclick="openPage('materials')">📦 المواد</button>
+            <button data-page="sales" onclick="openPage('sales')">💰 المبيعات</button>
+            <button data-page="expenses" onclick="openPage('expenses')">📄 المصروفات</button>
+            <button data-page="debts" onclick="openPage('debts')">👥 الديون</button>
+            <button data-page="reports" onclick="openPage('reports')">📊 التقارير</button>
+            <button data-page="statistics" onclick="openPage('statistics')">📈 الإحصائيات</button>
+            <button data-page="settings" onclick="openPage('settings')">⚙️ الإعدادات</button>
+        </div>
+
+        <div class="dropdown-menu" id="dropdownMenu">
+            <button data-page="materials" onclick="openPage('materials'); toggleMenu()">📦 المواد</button>
+            <button data-page="sales" onclick="openPage('sales'); toggleMenu()">💰 المبيعات</button>
+            <button data-page="expenses" onclick="openPage('expenses'); toggleMenu()">📄 المصروفات</button>
+            <button data-page="debts" onclick="openPage('debts'); toggleMenu()">👥 الديون</button>
+            <button data-page="reports" onclick="openPage('reports'); toggleMenu()">📊 التقارير</button>
+            <button data-page="statistics" onclick="openPage('statistics'); toggleMenu()">📈 الإحصائيات</button>
+            <button data-page="settings" onclick="openPage('settings'); toggleMenu()">⚙️ الإعدادات</button>
+        </div>
+
+        <!-- صفحة المواد -->
+        <div class="page" id="materials">
+            <button class="btn-back" onclick="goHome()">← رجوع</button>
+            <h2>إدارة المواد</h2>
+            <div class="alert-bar" id="lowStockAlert"></div>
+            <label>اسم المادة</label>
+            <input type="text" id="matName" placeholder="مثال: طحين">
+            <label>النوع</label>
+            <input type="text" id="matType" placeholder="مثال: قمح">
+            <label>الوحدة</label>
+            <select id="matUnit">
+                <option>كيلو</option>
+                <option>طن</option>
+                <option>شوال</option>
+                <option>قطعة</option>
+                <option>ظرف</option>
+                <option>غرام</option>
+                <option>متر</option>
+            </select>
+            <label>الرصيد الحالي</label>
+            <input type="number" id="matStock" placeholder="0">
+            <label>الحد الأدنى للتنبيه</label>
+            <input type="number" id="matMinStock" placeholder="0">
+            <label>سعر التكلفة بالليرة السورية</label>
+            <input type="number" id="matCostSYP" placeholder="0">
+            <label>سعر التكلفة بالدولار الأمريكي</label>
+            <input type="number" id="matCostUSD" placeholder="0">
+            <label>سعر البيع بالليرة السورية</label>
+            <input type="number" id="matSaleSYP" placeholder="0">
+            <label>سعر البيع بالدولار الأمريكي</label>
+            <input type="number" id="matSaleUSD" placeholder="0">
+            <button class="btn-save" onclick="addMaterial()">+ حفظ المادة</button>
+
+            <h3>قائمة المواد</h3>
+            <input type="text" id="searchMaterial" placeholder="🔍 بحث..." oninput="searchMaterials()">
+            <table id="materialsTable">
+                <tr><th>المعرف</th><th>الاسم</th><th>النوع</th><th>الوحدة</th><th>الرصيد</th><th>التكلفة</th><th>البيع</th><th>الربح</th><th>تعديل</th><th>حذف</th></tr>
+            </table>
+        </div>
+
+        <!-- صفحة المبيعات -->
+        <div class="page" id="sales">
+            <button class="btn-back" onclick="goHome()">← رجوع</button>
+            <h2>تسجيل المبيعات</h2>
+            <label>رقم الفاتورة</label>
+            <input type="text" id="invoiceNo" placeholder="INV-001">
+            <label>التاريخ</label>
+            <input type="date" id="saleDate">
+            <label>اسم العميل</label>
+            <input type="text" id="customerName" placeholder="اسم المشتري">
+            <label>المادة</label>
+            <select id="saleMaterial" onchange="calcTotal()"></select>
+            <label>الكمية المباعة</label>
+            <input type="number" id="saleQty" placeholder="0" oninput="calcTotal()">
+            <label>السعر الإفرادي</label>
+            <input type="number" id="saleUnitPrice" readonly>
+            <label>عملة الفاتورة</label>
+            <select id="saleCurrency" onchange="calcTotal()">
+                <option value="SYP" selected>ل.س</option>
+                <option value="USD">$</option>
+            </select>
+            <label>السعر الإجمالي</label>
+            <input type="number" id="saleTotal" readonly>
+            <input type="hidden" id="salePaid" value="0">
+            <button type="button" class="btn-print" onclick="addItemToInvoice()" style="background:#8e44ad;">+ إضافة مادة للفاتورة</button>
+            <h3>المواد المضافة</h3>
+            <table id="invoiceItemsTable">
+                <tr><th>المادة</th><th>الكمية</th><th>السعر الإفرادي</th><th>الإجمالي</th><th>حذف</th></tr>
+            </table>
+            <h3>المواد المضافة</h3>
+            <div class="table-responsive">
+                <table id="invoiceItemsTable">
+                    <tr><th>المادة</th><th>الكمية</th><th>السعر الإفرادي</th><th>الإجمالي</th><th>حذف</th></tr>
+                </table>
+            </div>
+            <button class="btn-save" onclick="addSale()">+ حفظ الفاتورة</button>
+            <button class="btn-print" onclick="printInvoice()">🖨️ طباعة الفاتورة</button>
+            <button class="btn-print" onclick="exportInvoiceAsPNG()" style="background:#8e44ad;">📷 تصدير PNG</button>
+
+            <h3>سجل المبيعات (آخر 5 فواتير)</h3>
+            <input type="text" id="searchSales" placeholder="🔍 بحث برقم الفاتورة أو اسم العميل..." oninput="searchSales()">
+            <table id="salesTable">
+                <tr><th>الفاتورة</th><th>التاريخ</th><th>العميل</th><th>المادة</th><th>الكمية</th><th>الإجمالي</th><th>المدفوع</th><th>الباقي</th><th>طباعة</th><th>PNG</th><th>تعديل</th><th>حذف</th></tr>
+            </table>
+        </div>
+
+        <!-- صفحة المصروفات -->
+        <div class="page" id="expenses">
+            <button class="btn-back" onclick="goHome()">← رجوع</button>
+            <h2>تسجيل المصروفات</h2>
+            <label>التاريخ</label>
+            <input type="date" id="expDate">
+            <label>المبلغ</label>
+            <div style="display:flex; gap:10px;">
+                <input type="number" id="expAmount" placeholder="0" style="flex:2;">
+                <select id="expAmountCurrency" style="flex:1;">
+                    <option value="SYP" selected>ل.س</option>
+                    <option value="USD">$</option>
+                </select>
+            </div>
+            <label>البيان</label>
+            <input type="text" id="expDesc" placeholder="مثال: كهرباء">
+            <label>التصنيف</label>
+            <select id="expCategory">
+                <option>فواتير</option>
+                <option>رواتب</option>
+                <option>نقل</option>
+                <option>صيانة</option>
+                <option>أخرى</option>
+            </select>
+            <button class="btn-save" onclick="addExpense()">+ حفظ المصروف</button>
+
+            <h3>سجل المصروفات</h3>
+            <table id="expensesTable">
+                <tr><th>التاريخ</th><th>المبلغ</th><th>البيان</th><th>التصنيف</th><th>تعديل</th><th>حذف</th></tr>
+            </table>
+        </div>
+
+        <!-- صفحة الديون -->
+        <div class="page" id="debts">
+            <button class="btn-back" onclick="goHome()">← رجوع</button>
+            <h2>إدارة الديون</h2>
+            <label>اسم المديون</label>
+            <input type="text" id="debtName" placeholder="اسم الشخص">
+            <label>تاريخ الدين</label>
+            <input type="date" id="debtDate">
+            <label>القيمة</label>
+            <div style="display:flex; gap:10px;">
+                <input type="number" id="debtAmount" placeholder="0" style="flex:2;">
+                <select id="debtAmountCurrency" style="flex:1;">
+                    <option value="SYP" selected>ل.س</option>
+                    <option value="USD">$</option>
+                </select>
+            </div>
+            <button class="btn-save" onclick="addDebt()">+ حفظ الدين</button>
+
+            <h3>إجمالي الديون المتبقية: <span id="totalDebts">0</span></h3>
+
+            <h3>قائمة الديون</h3>
+            <table id="debtsTable">
+                <tr><th>الاسم</th><th>التاريخ</th><th>القيمة</th><th>المسدد</th><th>المتبقي</th><th>سداد جزئي</th><th>تسديد كامل</th><th>طباعة</th><th>PNG</th><th>تعديل</th><th>حذف</th></tr>
+            </table>
+        </div>
+
+        <!-- صفحة التقارير -->
+        <div class="page" id="reports">
+            <button class="btn-back" onclick="goHome()">← رجوع</button>
+            <h2>التقارير</h2>
+            <label>من تاريخ</label>
+            <input type="date" id="reportFrom">
+            <label>إلى تاريخ</label>
+            <input type="date" id="reportTo">
+            <button class="btn-save" onclick="generateReport()">عرض التقرير</button>
+
+            <div class="balance-card">
+                <div>إجمالي المبيعات: <span id="totalSales">0</span></div>
+                <div>إجمالي المصروفات: <span id="totalExpenses">0</span></div>
+                <div>الربح الصافي: <span id="netProfit">0</span></div>
+            </div>
+
+            <h3>المبيعات حسب المادة</h3>
+            <table id="salesByMaterial"><tr><th>المادة</th><th>الكمية</th><th>الإيرادات</th></tr></table>
+            <h3>المصروفات حسب التصنيف</h3>
+            <table id="expensesByCategory"><tr><th>التصنيف</th><th>المبلغ</th></tr></table>
+        </div>
+
+        <!-- صفحة الإحصائيات العامة -->
+        <div class="page" id="statistics">
+            <button class="btn-back" onclick="goHome()">← رجوع</button>
+            <h2>📈 الإحصائيات العامة</h2>
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-title">💰 المبلغ في الصندوق</div>
+                    <div class="stat-value" id="statCash">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">📊 إجمالي المبيعات</div>
+                    <div class="stat-value" id="statTotalSales">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">💵 إجمالي المبالغ المحصلة</div>
+                    <div class="stat-value" id="statCollected">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">📉 إجمالي المصروفات</div>
+                    <div class="stat-value" id="statTotalExpenses">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">👥 الديون المستحقة</div>
+                    <div class="stat-value" id="statOutstandingDebts">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">🧾 عدد الفواتير</div>
+                    <div class="stat-value" id="statInvoiceCount">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">⚠️ مواد منخفضة</div>
+                    <div class="stat-value" id="statLowStock">0</div>
+                </div>
+            </div>
+            <p style="margin-top:20px; text-align:center; color:#555;">* الصندوق = إجمالي المحصل من المبيعات والديون - المصروفات</p>
+        </div>
+
+        <!-- صفحة الإعدادات -->
+        <div class="page" id="settings">
+            <button class="btn-back" onclick="goHome()">← رجوع</button>
+            <h2>الإعدادات</h2>
+            <label>سعر صرف الدولار مقابل الليرة</label>
+            <input type="number" id="exchangeRate" placeholder="مثال: 15000" onchange="saveSettings()">
+            <label>العملة الأساسية (تُخزن بها البيانات)</label>
+            <select id="baseCurrency" disabled>
+                <option value="USD">دولار أمريكي</option>
+                <option value="SYP">ليرة سورية</option>
+            </select>
+            <label>العملة المعروضة في الجداول</label>
+            <select id="displayCurrency" onchange="saveSettings()">
+                <option value="USD">دولار أمريكي</option>
+                <option value="SYP">ليرة سورية</option>
+                <option value="BOTH">العملتين معاً</option>
+            </select>
+            <hr style="margin:20px 0;">
+            <h3>كلمة مرور المالك</h3>
+            <p style="font-size:12px; color:#555;">تستخدم لمنع التعديلات غير المصرح بها. إذا لم يتم تعيينها، لن يُطلب أي كلمة مرور.</p>
+            <label>كلمة المرور الحالية (للتغيير فقط)</label>
+            <input type="password" id="currentPassword" placeholder="أدخل كلمة المرور الحالية">
+            <label>كلمة المرور الجديدة</label>
+            <input type="password" id="newPassword" placeholder="اتركها فارغة لعدم التغيير">
+            <label>تأكيد كلمة المرور الجديدة</label>
+            <input type="password" id="confirmNewPassword" placeholder="أعد إدخال كلمة المرور"> 
+            <label>اسم المحل التجاري</label>
+            <input type="text" id="businessName" placeholder="مثال: محلات Jasoft" onchange="saveBusinessInfo()">
+            <label>التوقيع (نص)</label>
+            <input type="text" id="ownerSignature" placeholder="مثال: توقيع المالك" onchange="saveBusinessInfo()">   
+         <button class="btn-save" onclick="changePassword()">تحديث كلمة المرور</button>
+
+            <hr style="margin:20px 0;">
+            <h3>رمز PIN للدخول</h3>
+            <p style="font-size:12px; color:#555;">رمز مكوّن من 4 أرقام يُطلب عند فتح التطبيق. اتركه فارغاً لتعطيله.</p>
+            <label>رمز PIN الحالي (للتغيير فقط)</label>
+            <input type="password" id="currentPin" placeholder="أدخل الرمز الحالي">
+            <label>رمز PIN الجديد (4 أرقام)</label>
+            <input type="password" id="newPin" placeholder="اتركه فارغاً لعدم التغيير" maxlength="4">
+            <button class="btn-save" onclick="changePin()">تحديث رمز PIN</button>
+
+            <hr style="margin:20px 0;">
+            <h3>نسخة احتياطية</h3>
+            <button class="btn-print" onclick="exportJSON()">📤 تصدير البيانات (JSON)</button>
+            <button class="btn-print" onclick="importJSON()" style="background:#e67e22;">📥 استيراد البيانات</button>
+            <input type="file" id="importFile" accept=".json" style="display:none;">
+            <p style="font-size:12px; color:#555; margin-top:10px;">* تصدير/استيراد جميع البيانات بما في ذلك الإعدادات.</p>
+        </div>
+    </div>
+
+    <!-- المودال المشترك -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content">
+            <h3 id="modalTitle">إدخال كلمة المرور</h3>
+            <input type="password" id="modalInput" placeholder="••••" maxlength="20">
+            <div>
+                <button class="btn-confirm" id="modalConfirm">تأكيد</button>
+                <button class="btn-cancel" id="modalCancel">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- مودال التأكيد للتصدير -->
+    <div class="modal-overlay" id="confirmOverlay">
+        <div class="modal-content">
+            <h3>تأكيد التصدير</h3>
+            <p>هل تريد تصدير نسخة احتياطية من البيانات الآن؟</p>
+            <div>
+                <button class="btn-confirm" id="confirmExportBtn">موافق</button>
+                <button class="btn-cancel" id="confirmCancelBtn">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/config.js?v=1788965265"></script>
+    <script src="js/auth.js?v=1788965265"></script>
+    <script src="js/data.js?v=1788965265"></script>
+    <script src="js/app.js?v=1788965265"></script>
+
+    <!-- نافذة المبلغ المدفوع -->
+    <div class="modal-overlay" id="paymentModalOverlay">
+        <div class="modal-content">
+            <h3>المبلغ المدفوع</h3>
+            <p>إجمالي الفاتورة: <span id="paymentTotalDisplay">0</span></p>
+            <p>أدخل المبلغ المدفوع للفاتورة كاملة</p>
+            <input type="number" id="paymentModalInput" placeholder="0">
+            <div>
+                <button class="btn-confirm" id="paymentConfirmBtn">تأكيد الحفظ</button>
+                <button class="btn-cancel" id="paymentCancelBtn">إلغاء</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

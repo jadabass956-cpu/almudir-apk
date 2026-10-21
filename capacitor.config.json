@@ -1,0 +1,22 @@
+{
+  "appId": "com.jasoft.almudir",
+  "appName": "المدير AI",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "android": {
+    "allowMixedContent": true,
+    "webContentsDebuggingEnabled": true,
+    "backgroundColor": "#2c3e50"
+  },
+  "server": {
+    "androidScheme": "https",
+    "cleartext": false,
+    "allowNavigation": ["*.web.app", "*.googleapis.com", "*.firebaseio.com"]
+  },
+  "plugins": {
+    "CapacitorHttp": { "enabled": true },
+    "PushNotifications": {
+      "presentationOptions": ["badge", "sound", "alert"]
+    }
+  }
+}

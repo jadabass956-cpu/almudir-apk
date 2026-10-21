@@ -1,0 +1,234 @@
+/* ═══════════════════════════════════════════════════════════════
+   🎨 المدير AI — نظام التصميم الموحد (Design Tokens)
+   ═══════════════════════════════════════════════════════════════
+   الهوية: الزمردي الفاخر
+   الإصدار: 1.0
+   التاريخ: 2026-10-10
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  color-scheme: light;
+
+  /* ─────────────────────────────────────────────────────────────
+     🟢 الهوية الأساسية — الزمردي الفاخر (Emerald Luxury)
+     ───────────────────────────────────────────────────────────── */
+  --color-primary:         #1e40af;   /* الأساسي */
+  --color-primary-dark:    #1e3a8a;   /* Hover */
+  --color-primary-darker:  #172554;   /* Active */
+  --color-primary-light:   #3b82f6;   /* Highlight */
+  --color-primary-lighter: #60a5fa;   /* Subtle */
+  --color-primary-bg:      #dbeafe;   /* Background tint */
+  --color-primary-bg-2:    #eff6ff;   /* Very light */
+  --color-primary-on:      #ffffff;   /* Text on primary */
+
+  /* ─────────────────────────────────────────────────────────────
+     👥 ألوان الفئات الثلاث
+     ───────────────────────────────────────────────────────────── */
+  --color-trader:    #1e40af;   /* 🏪 التاجر — أزرق ملكي */
+  --color-employee:  #2c5aa0;   /* 👨‍💼 الموظف — أزرق ملكي */
+  --color-customer:  #6b3fa0;   /* 👤 العميل — بنفسجي ملكي */
+  --color-tablet:    #2d3748;   /* 📱 التابلت — رمادي داكن */
+
+  /* ─────────────────────────────────────────────────────────────
+     🎯 ألوان الحالة (Semantic States)
+     ───────────────────────────────────────────────────────────── */
+  --color-success:        #27ae60;
+  --color-success-dark:   #229954;
+  --color-success-bg:     #e8f5e9;
+  --color-success-bg-2:   #f0fdf4;
+
+  --color-danger:         #e74c3c;
+  --color-danger-dark:    #c0392b;
+  --color-danger-bg:      #fef2f2;
+  --color-danger-bg-2:    #fff5f5;
+
+  --color-warning:        #f39c12;
+  --color-warning-dark:   #d68910;
+  --color-warning-bg:     #fff8e1;
+  --color-warning-bg-2:   #fef3c7;
+
+  --color-info:           #3498db;
+  --color-info-dark:      #2980b9;
+  --color-info-bg:        #f0f7ff;
+  --color-info-bg-2:      #e3f2fd;
+
+  /* 🎨 ألوان إضافية (accent) */
+  --color-accent-orange:  #e67e22;   /* برتقالي التاجر */
+  --color-gold:           #FFD54A;   /* ذهبي فاخر */
+
+  /* ─────────────────────────────────────────────────────────────
+     🎨 الخلفيات (Backgrounds)
+     ───────────────────────────────────────────────────────────── */
+  --bg-page:        #f5f7fa;   /* خلفية الصفحة */
+  --bg-page-alt:    #f8f9fa;   /* بديل */
+  --bg-card:        #ffffff;   /* البطاقات */
+  --bg-hover:       #f0f0f0;   /* عند التمرير */
+  --bg-active:      #e8e8e8;   /* عند الضغط */
+  --bg-overlay:     rgba(0,0,0,0.5);
+  --bg-modal:       #ffffff;
+
+  /* ─────────────────────────────────────────────────────────────
+     🔤 النصوص (Text)
+     ───────────────────────────────────────────────────────────── */
+  --text-primary:    #2c3e50;   /* العناوين */
+  --text-secondary:  #555555;   /* النصوص العادية */
+  --text-muted:      #95a5a6;   /* التلميحات */
+  --text-disabled:   #cccccc;   /* معطّل */
+  --text-on-primary: #ffffff;   /* على خلفية ملونة */
+  --text-link:       #3b82f6;   /* الروابط */
+
+  /* ─────────────────────────────────────────────────────────────
+     🔲 الحدود (Borders)
+     ───────────────────────────────────────────────────────────── */
+  --border-color:        #dddddd;
+  --border-color-strong: #cccccc;
+  --border-color-light:  #e9ecef;
+  --border-color-focus:  #1e40af;
+  --border-width:        1px;
+  --border-width-thick:  2px;
+
+  /* ─────────────────────────────────────────────────────────────
+     🔘 الاستدارة (Border Radius)
+     ───────────────────────────────────────────────────────────── */
+  --radius-xs:   4px;
+  --radius-sm:   6px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --radius-xl:   16px;
+  --radius-2xl:  24px;
+  --radius-full: 9999px;
+
+  /* ─────────────────────────────────────────────────────────────
+     🌑 الظلال (Shadows)
+     ───────────────────────────────────────────────────────────── */
+  --shadow-xs: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.10);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+  --shadow-xl: 0 20px 60px rgba(0,0,0,0.20);
+  --shadow-focus: 0 0 0 3px rgba(13,125,95,0.2);
+
+  /* ─────────────────────────────────────────────────────────────
+     📏 المسافات (Spacing — نظام 4px)
+     ───────────────────────────────────────────────────────────── */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ─────────────────────────────────────────────────────────────
+     🔤 الخطوط (Typography)
+     ───────────────────────────────────────────────────────────── */
+  --font-family:    'Cairo', 'Tajawal', 'Segoe UI', Tahoma, sans-serif;
+  --font-mono:      'Consolas', 'Monaco', monospace;
+  
+  --font-size-xs:   11px;
+  --font-size-sm:   13px;
+  --font-size-md:   15px;
+  --font-size-lg:   17px;
+  --font-size-xl:   20px;
+  --font-size-2xl:  24px;
+  --font-size-3xl:  30px;
+  --font-size-4xl:  38px;
+
+  --font-weight-normal:   400;
+  --font-weight-medium:   500;
+  --font-weight-semibold: 600;
+  --font-weight-bold:     700;
+  --font-weight-black:    800;
+
+  --line-height-tight:   1.25;
+  --line-height-normal:  1.5;
+  --line-height-relaxed: 1.7;
+
+  /* ─────────────────────────────────────────────────────────────
+     ⏱️ الحركات (Transitions)
+     ───────────────────────────────────────────────────────────── */
+  --transition-fast:   0.15s ease;
+  --transition-base:   0.25s ease;
+  --transition-slow:   0.35s ease;
+  --transition-bounce: 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+
+  /* ─────────────────────────────────────────────────────────────
+     📐 الطبقات (Z-Index)
+     ───────────────────────────────────────────────────────────── */
+  --z-dropdown:  1000;
+  --z-sticky:    1020;
+  --z-fixed:     1030;
+  --z-modal:     1040;
+  --z-popover:   1050;
+  --z-tooltip:   1060;
+  --z-toast:     1070;
+  --z-loading:   10000;
+
+  /* ─────────────────────────────────────────────────────────────
+     🎨 التدرجات (Gradients)
+     ───────────────────────────────────────────────────────────── */
+  --gradient-primary:  linear-gradient(135deg, #0f172a 0%, #1e40af 60%, #3b82f6 100%);
+  --gradient-luxury:   linear-gradient(135deg, #0f172a 0%, #1e40af 60%, #3b82f6 100%);
+  --gradient-dark:     linear-gradient(135deg, #0f172a 0%, #172554 100%);
+  --gradient-customer: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --gradient-gold:     linear-gradient(135deg, #ffd54a 0%, #f39c12 100%);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🌙 الوضع الليلي (Dark Mode)
+   ═══════════════════════════════════════════════════════════════ */
+[data-theme="dark"] {
+  color-scheme: dark;
+  /* الهوية — يلمع في الظلام */
+  --color-primary:         #3b82f6;
+  --color-primary-dark:    #1e40af;
+  --color-primary-darker:  #1e3a8a;
+  --color-primary-light:   #60a5fa;
+  --color-primary-lighter: #93c5fd;
+  --color-primary-bg:      #1e3a8a;
+  --color-primary-bg-2:    #1e3a8a;
+  --color-primary-on:      #ffffff;
+
+  /* الخلفيات */
+  --bg-page:        #0f1419;
+  --bg-page-alt:    #141a20;
+  --bg-card:        #1a2332;
+  --bg-hover:       #253345;
+  --bg-active:      #2d3d52;
+  --bg-overlay:     rgba(0,0,0,0.75);
+  --bg-modal:       #1a2332;
+
+  /* النصوص */
+  --text-primary:    #e8eef5;
+  --text-secondary:  #a8b5c4;
+  --text-muted:      #6a7788;
+  --text-disabled:   #4a5260;
+  --text-link:       #60a5fa;
+
+  /* الحدود */
+  --border-color:        #2d3d52;
+  --border-color-strong: #3a4a60;
+  --border-color-light:  #253345;
+  --border-color-focus:  #3b82f6;
+
+  /* الحالات — ألوان أعمق */
+  --color-success-bg:  #0f2e1f;
+  --color-danger-bg:   #3a1a1a;
+  --color-warning-bg:  #3a2e10;
+  --color-info-bg:     #0f2238;
+
+  /* الظلال — أقوى */
+  --shadow-xs: 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.5);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.6);
+  --shadow-xl: 0 20px 60px rgba(0,0,0,0.8);
+  --shadow-focus: 0 0 0 3px rgba(16,163,127,0.3);
+
+  /* التدرجات */
+  --gradient-primary: linear-gradient(135deg, #0f172a 0%, #1e40af 60%, #3b82f6 100%);
+  --gradient-luxury:  linear-gradient(135deg, #0f172a 0%, #1e40af 60%, #3b82f6 100%);
+}

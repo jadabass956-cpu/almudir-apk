@@ -1,0 +1,22 @@
+# Node
+node_modules/
+
+# Capacitor — Android يبني تلقائياً
+android/
+ios/
+
+# Builds
+build/
+.gradle/
+*.apk
+*.aab
+*.keystore
+*.jks
+
+# System
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.local

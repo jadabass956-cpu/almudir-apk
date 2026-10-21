@@ -1,0 +1,432 @@
+// ============================================================
+//  ⚙️ RESTAURANT SETTINGS — إعدادات المطعم للمدير
+//  v1.0.0
+// ============================================================
+
+// ═══════════════════════════════════════════════════════════
+//  🎯 الواجهات المتاحة
+// ═══════════════════════════════════════════════════════════
+window.RESTAURANT_VIEWS = {
+    admin: {
+        icon: '👑',
+        label: 'الإدارة الكاملة',
+        description: 'كل شيء — للمدير',
+        color: '#95a5a6'
+    },
+    waiter: {
+        icon: '🪑',
+        label: 'إدارة الطاولات',
+        description: 'للنادل والمشرف',
+        color: '#3498db'
+    },
+    kitchen: {
+        icon: '🍳',
+        label: 'شاشة المطبخ',
+        description: 'للشيف',
+        color: '#e67e22'
+    },
+    delivery: {
+        icon: '🛵',
+        label: 'طلبات التوصيل',
+        description: 'للسائق والمشرف',
+        color: '#27ae60'
+    }
+};
+
+// ═══════════════════════════════════════════════════════════
+//  📋 الإعدادات الافتراضية
+// ═══════════════════════════════════════════════════════════
+window.DEFAULT_RESTAURANT_SETTINGS = {
+    enabledViews: ['admin', 'waiter', 'kitchen', 'delivery'],
+    requireSelection: true,
+    lastUpdated: null
+};
+
+// ═══════════════════════════════════════════════════════════
+//  📖 قراءة الإعدادات
+// ═══════════════════════════════════════════════════════════
+async function loadRestaurantSettings() {
+    if (!currentUser?.uid || !db) return window.DEFAULT_RESTAURANT_SETTINGS;
+    try {
+        const doc = await db.collection('users').doc(currentUser.uid)
+            .collection('restaurant_settings').doc('main').get();
+        if (doc.exists) {
+            return { ...window.DEFAULT_RESTAURANT_SETTINGS, ...doc.data() };
+        }
+    } catch(e) {
+        console.warn('[rest-settings] load:', e.message);
+    }
+    return window.DEFAULT_RESTAURANT_SETTINGS;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  💾 حفظ الإعدادات
+// ═══════════════════════════════════════════════════════════
+async function saveRestaurantSettings(settings) {
+    if (!currentUser?.uid || !db) return false;
+    try {
+        await db.collection('users').doc(currentUser.uid)
+            .collection('restaurant_settings').doc('main').set({
+                ...settings,
+                lastUpdated: Date.now()
+            }, { merge: true });
+        return true;
+    } catch(e) {
+        console.error('[rest-settings] save:', e);
+        return false;
+    }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  🎨 عرض صفحة الإعدادات
+// ═══════════════════════════════════════════════════════════
+async function renderRestaurantSettings(container) {
+    if (!container) return;
+
+    container.innerHTML = '<div style="text-align:center; padding:40px; color:#999;">⏳ جاري التحميل...</div>';
+
+    const settings = await loadRestaurantSettings();
+    const currentView = localStorage.getItem('restaurant_view') || 'admin';
+
+    let viewsHtml = '';
+    Object.entries(window.RESTAURANT_VIEWS).forEach(([key, view]) => {
+        const enabled = settings.enabledViews.includes(key);
+        viewsHtml += `
+            <label id="view-toggle-${key}" style="display:flex; align-items:center; gap:12px; padding:12px; background:${enabled ? '#e8f5e9' : '#f8f9fa'}; border:2px solid ${enabled ? '#27ae60' : '#ddd'}; border-radius:10px; margin-bottom:8px; cursor:pointer; transition:all 0.2s;">
+                <input type="checkbox" data-view="${key}" ${enabled ? 'checked' : ''} onchange="_restSettingsToggle(this)" style="width:20px; height:20px; cursor:pointer; accent-color:#27ae60;">
+                <div style="font-size:26px;">${view.icon}</div>
+                <div style="flex:1; min-width:0;">
+                    <div style="font-weight:700; color:#2c3e50; font-size:14px;">${view.label}</div>
+                    <div style="font-size:11px; color:#666; margin-top:2px;">${view.description}</div>
+                </div>
+            </label>
+        `;
+    });
+
+    const currentInfo = window.RESTAURANT_VIEWS[currentView] || window.RESTAURANT_VIEWS.admin;
+
+    container.innerHTML = `
+        <h2 style="margin:0 0 6px 0; font-size:20px;">⚙️ إعدادات المطعم</h2>
+        <p style="color:#666; font-size:13px; margin:0 0 15px 0;">تحكم في الواجهات المتاحة للموظفين</p>
+
+        <!-- شرح -->
+        <div style="background:#f0f7ff; border-radius:10px; padding:12px; margin-bottom:15px; border-right:4px solid #3498db;">
+            <div style="font-size:12px; color:#555; line-height:1.7;">
+                💡 <b>كيف يعمل؟</b><br>
+                • فعّل الواجهات التي يحتاجها مطعمك<br>
+                • عند فتح التطبيق على جهاز جديد → يختار المستخدم واجهته<br>
+                • الاختيار يُحفظ على الجهاز<br>
+                • المدير يستطيع تغيير الواجهة في أي وقت
+            </div>
+        </div>
+
+        <!-- الواجهات المُفعّلة -->
+        <div style="background:white; border-radius:12px; padding:14px; margin-bottom:15px; box-shadow:0 2px 6px rgba(0,0,0,0.05);">
+            <h3 style="margin:0 0 12px 0; font-size:14px; color:#2c3e50; display:flex; align-items:center; gap:8px;">
+                <span>🎛️</span> الواجهات المُفعّلة
+            </h3>
+            ${viewsHtml}
+            <div style="font-size:11px; color:#999; margin-top:8px; text-align:center;">
+                ⚠️ يجب تفعيل واجهة واحدة على الأقل
+            </div>
+        </div>
+
+        <!-- الواجهة الحالية -->
+        <div style="background:white; border-radius:12px; padding:14px; margin-bottom:15px; box-shadow:0 2px 6px rgba(0,0,0,0.05);">
+            <h3 style="margin:0 0 12px 0; font-size:14px; color:#2c3e50; display:flex; align-items:center; gap:8px;">
+                <span>📱</span> الواجهة الحالية على هذا الجهاز
+            </h3>
+            <div style="display:flex; align-items:center; gap:12px; padding:14px; background:#fff8f0; border:2px solid #e67e22; border-radius:10px;">
+                <div style="font-size:32px;">${currentInfo.icon}</div>
+                <div style="flex:1; min-width:0;">
+                    <div style="font-weight:700; color:#2c3e50; font-size:15px;">${currentInfo.label}</div>
+                    <div style="font-size:11px; color:#666; margin-top:2px;">تُفتح تلقائياً على هذا الجهاز</div>
+                </div>
+            </div>
+            <button onclick="_restSettingsResetView()" style="width:100%; margin-top:10px; padding:12px; background:#e67e22; color:white; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer;">
+                🔄 تغيير الواجهة (يُعيد الاختيار)
+            </button>
+        </div>
+
+        <!-- حفظ -->
+        <button onclick="_restSettingsSave()" style="width:100%; padding:14px; background:linear-gradient(135deg,#27ae60,#229954); color:white; border:none; border-radius:10px; font-size:15px; font-weight:700; cursor:pointer; box-shadow:0 3px 10px rgba(39,174,96,0.3);">
+            💾 حفظ الإعدادات
+        </button>
+    `;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  🎛️ Toggle
+// ═══════════════════════════════════════════════════════════
+function _restSettingsToggle(cb) {
+    const label = document.getElementById('view-toggle-' + cb.dataset.view);
+    if (!label) return;
+    if (cb.checked) {
+        label.style.background = '#e8f5e9';
+        label.style.borderColor = '#27ae60';
+    } else {
+        label.style.background = '#f8f9fa';
+        label.style.borderColor = '#ddd';
+    }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  💾 حفظ
+// ═══════════════════════════════════════════════════════════
+async function _restSettingsSave() {
+    const checkboxes = document.querySelectorAll('input[data-view]');
+    const enabledViews = [];
+    checkboxes.forEach(cb => {
+        if (cb.checked) enabledViews.push(cb.dataset.view);
+    });
+
+    if (enabledViews.length === 0) {
+        alert('⚠️ يجب تفعيل واجهة واحدة على الأقل');
+        return;
+    }
+
+    const btn = event?.target;
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ جاري الحفظ...'; }
+
+    const ok = await saveRestaurantSettings({
+        enabledViews,
+        requireSelection: true
+    });
+
+    if (btn) { btn.disabled = false; btn.textContent = '💾 حفظ الإعدادات'; }
+
+    if (ok) {
+        if (typeof toast === 'function') toast('✅ تم حفظ الإعدادات', 'success');
+        else alert('✅ تم الحفظ');
+    } else {
+        alert('⚠️ فشل الحفظ');
+    }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  🔄 إعادة تعيين الواجهة
+// ═══════════════════════════════════════════════════════════
+function _restSettingsResetView() {
+    if (!confirm('🔄 تغيير الواجهة؟\n\nسيعيد تحميل التطبيق ويعرض شاشة الاختيار.')) return;
+    resetRestaurantView();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  🚪 فتح الصفحة
+// ═══════════════════════════════════════════════════════════
+function openRestaurantSettings() {
+    let cont = document.getElementById('page-restaurant-settings');
+    if (!cont) {
+        cont = document.createElement('div');
+        cont.className = 'page';
+        cont.id = 'page-restaurant-settings';
+        cont.style.display = 'none';
+        document.body.appendChild(cont);
+    }
+    if (typeof openPage === 'function') {
+        openPage('page-restaurant-settings');
+    } else {
+        document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+        cont.style.display = 'block';
+    }
+    setTimeout(() => renderRestaurantSettings(cont), 150);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  🚪 VIEW SELECTOR — شاشة اختيار الواجهة
+// ═══════════════════════════════════════════════════════════
+
+// الدالة الرئيسية — تُستدعى عند تحميل التطبيق
+async function checkAndShowViewSelector() {
+    // فقط لأنشطة المطعم/الكافيه
+    const bizType = (currentUser?.businessType || '').trim();
+    const isRestaurant = bizType.includes('مطعم') ||
+                         bizType.includes('كافيه') ||
+                         bizType.includes('كافي');
+    if (!isRestaurant) return;
+
+    // هل يوجد اختيار محفوظ؟
+    let saved = null;
+    try { saved = localStorage.getItem('restaurant_view'); } catch(e) {}
+
+    if (saved) {
+        console.log('✅ [view] محفوظ:', saved);
+        applyRestaurantView(saved);
+        return;
+    }
+
+    // جلب الإعدادات
+    const settings = await loadRestaurantSettings();
+    const enabled = settings.enabledViews || ['admin'];
+
+    // لو واجهة واحدة فقط → اختيار تلقائي
+    if (enabled.length === 1) {
+        console.log('✅ [view] اختيار تلقائي:', enabled[0]);
+        try { localStorage.setItem('restaurant_view', enabled[0]); } catch(e) {}
+        applyRestaurantView(enabled[0]);
+        return;
+    }
+
+    // عرض شاشة الاختيار
+    showViewSelector(enabled);
+}
+
+// ─── عرض شاشة الاختيار ───
+function showViewSelector(enabledViews) {
+    // إزالة أي شيء سابق
+    const old = document.getElementById('viewSelectorOverlay');
+    if (old) old.remove();
+
+    let buttonsHtml = '';
+    enabledViews.forEach(key => {
+        const view = window.RESTAURANT_VIEWS[key];
+        if (!view) return;
+        buttonsHtml += `
+            <button onclick="_restSelectView('${key}')" style="width:100%; padding:18px 16px; background:white; color:#2c3e50; border:2px solid ${view.color}; border-radius:14px; margin-bottom:12px; cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:14px; text-align:right; box-shadow:0 3px 10px rgba(0,0,0,0.06); transition:transform 0.15s, box-shadow 0.15s;"
+                onmouseover="this.style.transform='scale(1.02)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.12)';"
+                onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 3px 10px rgba(0,0,0,0.06)';">
+                <div style="width:56px; height:56px; background:${view.color}20; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:32px; flex-shrink:0; border:2px solid ${view.color};">
+                    ${view.icon}
+                </div>
+                <div style="flex:1; min-width:0;">
+                    <div style="font-weight:700; color:#2c3e50; font-size:17px;">${view.label}</div>
+                    <div style="font-size:12px; color:#666; margin-top:4px;">${view.description}</div>
+                </div>
+                <div style="color:${view.color}; font-size:24px; font-weight:bold; flex-shrink:0;">‹</div>
+            </button>
+        `;
+    });
+
+    const bizName = currentUser?.businessName || 'المطعم';
+
+    const overlay = document.createElement('div');
+    overlay.id = 'viewSelectorOverlay';
+    overlay.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:linear-gradient(135deg,#f8f9fa,#e9ecef); z-index:2147483647; display:flex; align-items:center; justify-content:center; padding:20px; overflow-y:auto;';
+
+    overlay.innerHTML = `
+        <div style="max-width:520px; width:100%; background:white; border-radius:20px; padding:30px 24px; box-shadow:0 10px 40px rgba(0,0,0,0.15);">
+            <div style="text-align:center; margin-bottom:24px;">
+                <div style="font-size:56px; margin-bottom:8px;">🍽️</div>
+                <div style="font-size:22px; font-weight:bold; color:#2c3e50; margin-bottom:4px;">${_afEsc(bizName)}</div>
+                <div style="font-size:14px; color:#666;">اختر واجهتك للبدء</div>
+            </div>
+            <div style="border-top:2px dashed #e9ecef; margin:20px 0;"></div>
+            ${buttonsHtml}
+            <div style="text-align:center; margin-top:20px; padding-top:16px; border-top:1px solid #eee; font-size:11px; color:#999; line-height:1.6;">
+                💡 <b>ملاحظة:</b><br>
+                يمكنك تغيير الواجهة لاحقاً من<br>
+                ☰ → واجهة العمل → ⚙️ إعدادات المطعم
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+    console.log('🎨 [view] عرض شاشة الاختيار');
+}
+
+// ─── عند اختيار واجهة ───
+function _restSelectView(viewKey) {
+    try { localStorage.setItem('restaurant_view', viewKey); } catch(e) {}
+
+    const overlay = document.getElementById('viewSelectorOverlay');
+    if (overlay) {
+        overlay.style.transition = 'opacity 0.3s';
+        overlay.style.opacity = '0';
+        setTimeout(() => overlay.remove(), 300);
+    }
+
+    applyRestaurantView(viewKey);
+}
+
+// ─── تطبيق الواجهة ───
+function applyRestaurantView(view) {
+    // لو admin → لا شيء (يفتح التطبيق العادي)
+    if (view === 'admin') {
+        console.log('👑 [view] الإدارة الكاملة');
+        return;
+    }
+
+    let targetPage = '';
+    if (view === 'waiter') {
+        targetPage = 'activity-restaurant-tables';
+    } else if (view === 'kitchen') {
+        targetPage = 'activity-restaurant-kitchen';
+    } else if (view === 'delivery') {
+        targetPage = 'activity-restaurant-delivery';
+    } else {
+        return;
+    }
+
+    // فتح الصفحة بعد التأكد من جاهزية التطبيق
+    let attempts = 0;
+    const tryOpen = setInterval(() => {
+        attempts++;
+        const bodyReady = document.body.classList.contains('app-ready');
+        const pageExists = !!document.getElementById(targetPage);
+
+        if (bodyReady && pageExists) {
+            clearInterval(tryOpen);
+            try {
+                if (typeof openPage === 'function') {
+                    openPage(targetPage);
+                }
+                console.log('🎯 [view] فُتحت:', targetPage);
+            } catch(e) {
+                console.warn('[view] open:', e.message);
+            }
+        }
+
+        if (attempts > 40) {
+            clearInterval(tryOpen);
+            console.warn('[view] timeout');
+        }
+    }, 250);
+}
+
+// ─── إعادة تعيين الواجهة (للاستخدام من الإعدادات) ───
+function resetRestaurantView() {
+    try { localStorage.removeItem('restaurant_view'); } catch(e) {}
+    location.reload();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  🔗 Hook على تحميل التطبيق
+// ═══════════════════════════════════════════════════════════
+(function initViewSelector() {
+    if (typeof auth === 'undefined' || !auth) return;
+
+    let _checked = false;
+
+    auth.onAuthStateChanged(function(user) {
+        if (!user || _checked) return;
+        _checked = true;
+
+        // انتظار تحميل البيانات
+        setTimeout(() => {
+            checkAndShowViewSelector().catch(e => {
+                console.warn('[view-selector] init:', e.message);
+            });
+        }, 2500);
+    });
+
+    console.log('🚪 [view-selector] جاهز');
+})();
+
+window.checkAndShowViewSelector = checkAndShowViewSelector;
+window.showViewSelector = showViewSelector;
+window._restSelectView = _restSelectView;
+window.applyRestaurantView = applyRestaurantView;
+window.resetRestaurantView = resetRestaurantView;
+
+// ═══════════════════════════════════════════════════════════
+//  🌐 Export
+// ═══════════════════════════════════════════════════════════
+window.openRestaurantSettings = openRestaurantSettings;
+window._restSettingsSave = _restSettingsSave;
+window._restSettingsToggle = _restSettingsToggle;
+window._restSettingsResetView = _restSettingsResetView;
+window.loadRestaurantSettings = loadRestaurantSettings;
+window.saveRestaurantSettings = saveRestaurantSettings;
+window.renderRestaurantSettings = renderRestaurantSettings;
+
+console.log('⚙️ [restaurant-settings] v1.0.0 ready');
