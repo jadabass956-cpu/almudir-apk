@@ -5151,7 +5151,21 @@ async function sendAIMessage() {
 let materialQrScanner = null;
 
 async function startMaterialQRScanner() {
-    // ===== ML Kit للأندرويد =====
+    // ===== 🚀 ML Kit Native (APK) =====
+    if (typeof window.scanBarcodeNative === 'function') {
+        try {
+            const result = await window.scanBarcodeNative({
+                formats: ['EAN_13', 'EAN_8', 'CODE_128', 'ITF', 'QR_CODE']
+            });
+            if (result.ok && result.barcodes && result.barcodes.length > 0) {
+                await handleMaterialQR(result.barcodes[0].rawValue);
+            }
+        } catch(e) {
+            console.warn('❌ [mat-scan] native:', e);
+        }
+        return;
+    }
+    // ===== ML Kit القديم (احتياطي) =====
     if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.BarcodeScanner) {
         try {
             const { BarcodeScanner } = window.Capacitor.Plugins;
@@ -5334,7 +5348,21 @@ async function stopMaterialQRScanner() {
 // ==================== البيع بالباركود ====================
 async function startSaleQRScanner() {
     document.body.classList.add('qr-open');
-    // ===== ML Kit للأندرويد =====
+    // ===== 🚀 ML Kit Native (APK) =====
+    if (typeof window.scanBarcodeNative === 'function') {
+        try {
+            const result = await window.scanBarcodeNative({
+                formats: ['EAN_13', 'EAN_8', 'CODE_128', 'ITF', 'QR_CODE']
+            });
+            if (result.ok && result.barcodes && result.barcodes.length > 0) {
+                handleSaleQR(result.barcodes[0].rawValue);
+            }
+        } catch(e) {
+            console.warn('❌ [sale-scan] native:', e);
+        }
+        return;
+    }
+    // ===== ML Kit القديم (احتياطي) =====
     if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.BarcodeScanner) {
         try {
             const { BarcodeScanner } = window.Capacitor.Plugins;
