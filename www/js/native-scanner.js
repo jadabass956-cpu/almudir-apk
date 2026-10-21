@@ -61,3 +61,32 @@
         }
     })();
 })();
+
+// ═══════════════════════════════════════
+//  🔍 Debug — يظهر في شريط العنوان
+// ═══════════════════════════════════════
+setTimeout(() => {
+    const _diag = {
+        cap: typeof window.Capacitor,
+        native: window.Capacitor?.isNativePlatform?.(),
+        scan: typeof window.scanBarcodeNative,
+        bs: typeof window.BarcodeScanner,
+        plugins: Object.keys(window.Capacitor?.Plugins || {}).length
+    };
+    
+    const _msg = `cap=${_diag.cap} native=${_diag.native} scan=${_diag.scan} bs=${_diag.bs} plug=${_diag.plugins}`;
+    console.log('🔍 [DIAG]', _msg);
+    
+    // اكتب في شريط العنوان
+    document.title = `🔍 ${_msg}`;
+    
+    // اكتب في body
+    const _debugDiv = document.createElement('div');
+    _debugDiv.style.cssText = 'position:fixed;bottom:80px;left:10px;right:10px;background:#000;color:#0f0;padding:10px;font-size:11px;z-index:99999;border-radius:8px;font-family:monospace;';
+    _debugDiv.textContent = _msg;
+    _debugDiv.id = 'diag-banner';
+    document.body.appendChild(_debugDiv);
+    
+    // يُخفى بعد 30 ثانية
+    setTimeout(() => _debugDiv.remove(), 30000);
+}, 3000);
