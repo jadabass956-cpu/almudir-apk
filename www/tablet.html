@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1a1a2e">
+<title>شاشة الحضور</title>
+<style>
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Kufi Arabic', Arial, sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+}
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 22px;
+    background: rgba(0,0,0,0.25);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.biz-name {
+    font-size: 22px;
+    font-weight: 700;
+    color: #f39c12;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.clock {
+    text-align: left;
+    line-height: 1.3;
+}
+.clock-time {
+    font-size: 26px;
+    font-weight: 700;
+    color: #fff;
+    font-variant-numeric: tabular-nums;
+}
+.clock-date {
+    font-size: 12px;
+    color: #94a3b8;
+}
+.main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 20px;
+    padding: 20px 22px;
+    overflow: hidden;
+}
+@media (max-width: 900px), (orientation: portrait) {
+    .main { grid-template-columns: 1fr; grid-template-rows: auto 1fr; padding: 12px; gap: 12px; }
+}
+.qr-panel {
+    background: #fff;
+    border-radius: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 22px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+}
+#qrContainer {
+    background: #fff;
+    padding: 12px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 280px;
+    min-height: 280px;
+}
+#qrContainer canvas, #qrContainer img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+.qr-title {
+    color: #1a1a2e;
+    font-size: 22px;
+    font-weight: 800;
+    margin: 14px 0 6px;
+    text-align: center;
+}
+.qr-subtitle {
+    color: #64748b;
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 14px;
+}
+.countdown-wrap {
+    width: 100%;
+    max-width: 340px;
+    background: #f1f5f9;
+    border-radius: 12px;
+    padding: 10px 14px;
+    text-align: center;
+}
+.countdown-text {
+    color: #475569;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+.countdown-track {
+    background: #e2e8f0;
+    height: 10px;
+    border-radius: 6px;
+    overflow: hidden;
+}
+.countdown-bar {
+    height: 100%;
+    width: 100%;
+    background: #27ae60;
+    transition: width 0.3s linear, background 0.3s;
+}
+.stats-panel {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 24px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.stats-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #f39c12;
+    margin: 0 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.stats-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+.stat-card {
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+}
+.stat-num {
+    font-size: 26px;
+    font-weight: 800;
+    line-height: 1;
+}
+.stat-lbl {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-top: 4px;
+}
+.stat-num.green { color: #27ae60; }
+.stat-num.red { color: #e74c3c; }
+.stat-num.blue { color: #3498db; }
+.emp-list {
+    flex: 1;
+    overflow-y: auto;
+    padding-left: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.2) transparent;
+}
+.emp-list::-webkit-scrollbar { width: 5px; }
+.emp-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+.emp-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 10px;
+    margin-bottom: 6px;
+    font-size: 14px;
+}
+.emp-row.present { border-right: 3px solid #27ae60; }
+.emp-row.absent { border-right: 3px solid #e74c3c; opacity: 0.65; }
+.emp-row.late { border-right: 3px solid #f39c12; }
+.emp-name { font-weight: 600; }
+.emp-status { font-size: 12px; color: #94a3b8; font-variant-numeric: tabular-nums; }
+.emp-status.green { color: #27ae60; font-weight: 700; }
+.emp-status.red { color: #e74c3c; }
+.emp-status.orange { color: #f39c12; }
+.error-screen {
+    position: fixed; inset: 0;
+    background: #1a1a2e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    color: #fff;
+    padding: 30px;
+    text-align: center;
+    z-index: 100;
+}
+.error-screen h2 { color: #e74c3c; margin-bottom: 12px; font-size: 22px; }
+.error-screen p { color: #94a3b8; font-size: 14px; line-height: 1.7; }
+.loading { text-align: center; color: #94a3b8; padding: 40px; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+    <div class="biz-name">
+        <span>📱</span>
+        <span id="bizName">النشاط</span>
+    </div>
+    <div class="clock">
+        <div class="clock-time" id="clockTime">--:--:--</div>
+        <div class="clock-date" id="clockDate">جاري التحميل...</div>
+    </div>
+</div>
+
+<div class="main">
+    <div class="qr-panel">
+        <div id="qrContainer" class="loading">⏳ جاري التحميل...</div>
+        <div class="qr-title">📱 امسح الرمز لتسجيل الحضور</div>
+        <div class="qr-subtitle">افتح التطبيق → تسجيل الحضور → امسح الرمز</div>
+        <div class="countdown-wrap">
+            <div class="countdown-text">⏱️ يتغيّر الرمز خلال <strong id="countdownText">--</strong></div>
+            <div class="countdown-track"><div class="countdown-bar" id="countdownBar"></div></div>
+        </div>
+    </div>
+
+    <div class="stats-panel">
+        <h3 class="stats-title">👥 الحضور اليوم</h3>
+        <div class="stats-summary">
+            <div class="stat-card">
+                <div class="stat-num green" id="statPresent">0</div>
+                <div class="stat-lbl">✅ حاضر</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num red" id="statAbsent">0</div>
+                <div class="stat-lbl">❌ غائب</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num blue" id="statTotal">0</div>
+                <div class="stat-lbl">👥 الإجمالي</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num" style="color:#8e44ad;" id="statPercent">0%</div>
+                <div class="stat-lbl">📊 نسبة</div>
+            </div>
+        </div>
+        <div class="emp-list" id="empList">
+            <div class="loading">⏳ جاري التحميل...</div>
+        </div>
+    </div>
+</div>
+
+<div id="errorScreen" class="error-screen" style="display:none;">
+    <h2 id="errTitle">⚠️ خطأ</h2>
+    <p id="errMsg">-</p>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="js/tablet-display.js?v=90052503"></script>
+</body>
+</html>

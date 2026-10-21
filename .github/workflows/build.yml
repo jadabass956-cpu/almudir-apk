@@ -1,0 +1,76 @@
+name: Build Al-Mudir APK
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Add Android platform
+        run: npx cap add android
+
+      - name: Sync Capacitor
+        run: npx cap sync
+
+      - name: Build debug APK
+        working-directory: android
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleDebug
+
+      - name: Rename APK
+        run: |
+          mkdir -p artifacts
+          VERSION="v1.0.${{ github.run_number }}"
+          APK_NAME="almudir-${VERSION}.apk"
+          cp android/app/build/outputs/apk/debug/app-debug.apk "artifacts/${APK_NAME}"
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          echo "APK_NAME=${APK_NAME}" >> $GITHUB_ENV
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: almudir-apk
+          path: artifacts/*.apk
+          retention-days: 30
+
+      - name: Create Release
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.VERSION }}
+          name: Al-Mudir ${{ env.VERSION }}
+          files: artifacts/*.apk
+          draft: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,276 @@
+
+// ===== ALMUDIR: Firebase Persistence =====
+// يجبر Firebase على حفظ الجلسة محلياً (LOCAL) حتى بعد إغلاق التطبيق
+(async () => {
+    try {
+        if (auth && auth.setPersistence && firebase.auth.Auth.Persistence) {
+            await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+            console.log('✅ Firebase persistence = LOCAL');
+        }
+    } catch (e) {
+        console.warn('setPersistence failed:', e);
+    }
+})();
+// ===== END =====
+
+const ADMIN_EMAIL = 'jadabass956@gmail.com';
+// ==================== المتغيرات العامة ====================
+let currentUser = null; // بيانات المستخدم من Firestore
+
+// ==================== دوال إظهار الشاشات ====================
+function showLogin() {
+    const menu = document.getElementById('dropdownMenu');
+    if (menu) menu.classList.remove('show');
+    const menuBtn = document.getElementById('mainMenuBtn');
+    if (menuBtn) menuBtn.style.display = 'none';
+    hideLoading();
+    document.getElementById('authSection').style.display = 'block';
+    document.getElementById('registerSection').style.display = 'none';
+    document.getElementById('subscriptionSection').style.display = 'none';
+    document.getElementById('mainContainer').style.display = 'none';
+}
+
+function showRegister() {
+    const menu = document.getElementById('dropdownMenu');
+    if (menu) menu.classList.remove('show');
+    document.getElementById('authSection').style.display = 'none';
+    document.getElementById('registerSection').style.display = 'block';
+    document.getElementById('subscriptionSection').style.display = 'none';
+    document.getElementById('mainContainer').style.display = 'none';
+}
+
+function showSubscriptionScreen() {
+    const menu = document.getElementById('dropdownMenu');
+    if (menu) menu.classList.remove('show');
+    hideLoading();
+    document.getElementById('authSection').style.display = 'none';
+    document.getElementById('registerSection').style.display = 'none';
+    document.getElementById('subscriptionSection').style.display = 'block';
+    document.getElementById('mainContainer').style.display = 'none';
+}
+
+function showApp() {
+    const menuBtn = document.getElementById('mainMenuBtn');
+    if (menuBtn) menuBtn.style.display = 'block';
+    hideLoading();
+    document.getElementById('authSection').style.display = 'none';
+    document.getElementById('registerSection').style.display = 'none';
+    document.getElementById('subscriptionSection').style.display = 'none';
+    document.getElementById('mainContainer').style.display = 'block';
+    openPage('analytics');
+    updateAllTables();
+}
+
+// ==================== دوال المصادقة ====================
+async function register() {
+    const fullName = document.getElementById('regFullName').value.trim();
+    const phone = document.getElementById('regPhone').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    const password = document.getElementById('regPassword').value;
+    const governorate = document.getElementById('regGovernorate').value.trim();
+    const town = document.getElementById('regTown').value.trim();
+    const district = document.getElementById('regDistrict').value.trim();
+    const businessType = document.getElementById('regBusinessType').value;
+    const agreed = document.getElementById('regAgree').checked;
+
+    if (!fullName || !phone || !email || !password || !governorate || !town || !district || !agreed) {
+        document.getElementById('registerError').textContent = 'الرجاء تعبئة جميع الحقول والموافقة على الشروط';
+        return;
+    }
+
+    try {
+        const cred = await auth.createUserWithEmailAndPassword(email, password);
+        const uid = cred.user.uid;
+        // إرسال رابط التفعيل إلى البريد الإلكتروني
+        await cred.user.sendEmailVerification();
+        await db.collection('users').doc(uid).set({
+            fullName,
+            phone,
+            email,
+            location: { governorate, town, district },
+            businessType,
+            agreedToTerms: true,
+            trialStartDate: firebase.firestore.FieldValue.serverTimestamp(),
+            subscriptionStatus: 'trial'
+        });
+        alert('تم إنشاء الحساب بنجاح. تم إرسال رابط التفعيل إلى بريدك الإلكتروني.\nإذا لم تجد الرسالة في البريد الوارد، افحص مجلد الرسائل غير المرغوب فيها (Spam).');
+        showLogin();
+    } catch (error) {
+        document.getElementById('registerError').textContent = error.message;
+    }
+}
+
+async function login() {
+    const email = document.getElementById('authEmail').value.trim();
+    const password = document.getElementById('authPassword').value;
+    try {
+        await auth.signInWithEmailAndPassword(email, password);
+        await checkSubscriptionAndShowApp();
+    } catch (error) {
+        document.getElementById('loginError').textContent = error.message;
+    }
+}
+
+async function logout() {
+    stopListeningToUserData();
+    await auth.signOut();
+    currentUser = null;
+    showLogin();
+}
+
+// ==================== فحص الاشتراك ====================
+async function checkSubscriptionAndShowApp() {
+    const user = auth.currentUser;
+    if (!user) {
+        showLogin();
+        return;
+    }
+    try {
+        // رفض الدخول إذا كان البريد غير مفعّل
+        if (!user.emailVerified) {
+            alert('يرجى تفعيل بريدك الإلكتروني أولاً.\nتم إرسال رابط التفعيل إلى بريدك.\nإذا لم تجد الرسالة في البريد الوارد، افحص مجلد الرسائل غير المرغوب فيها (Spam).');
+            await user.sendEmailVerification();
+            showLogin();
+            return;
+        }
+
+        const doc = await db.collection('users').doc(user.uid).get();
+        if (doc.exists) {
+            currentUser = doc.data();
+            currentUser.uid = user.uid;
+
+            // التأكد من وجود trialStartDate
+            if (!currentUser.trialStartDate) {
+                await db.collection('users').doc(user.uid).update({
+                    trialStartDate: firebase.firestore.FieldValue.serverTimestamp(),
+                    subscriptionStatus: 'trial'
+                });
+                currentUser.trialStartDate = new Date();
+            }
+
+            let trialStart = currentUser.trialStartDate.toDate ? currentUser.trialStartDate.toDate() : new Date(currentUser.trialStartDate.seconds * 1000 || Date.now());
+            const trialEnd = trialStart.getTime() + 7 * 24 * 60 * 60 * 1000;
+            const now = Date.now();
+
+            if (now < trialEnd || currentUser.subscriptionStatus === 'active') {
+                await loadAllDataFromFirestore();
+                listenToUserData();
+    // مزامنة البيانات المحلية بعد التحقق من الجلسة
+    if (typeof syncLocalData === 'function') {
+        setTimeout(() => syncLocalData(), 2000);
+    }
+    checkPinOnLoad();
+    checkAdminAccess();
+    // ربط المستخدم بـ OneSignal
+    if (window.OneSignalDeferred) {
+        OneSignalDeferred.push(function(OneSignal) {
+            OneSignal.setExternalUserId(auth.currentUser.uid);
+        });
+    }
+            } else {
+                showSubscriptionScreen();
+            }
+        } else {
+            // إنشاء بيانات مستخدم جديدة تلقائيًا
+            await db.collection('users').doc(user.uid).set({
+                trialStartDate: firebase.firestore.FieldValue.serverTimestamp(),
+                subscriptionStatus: 'trial',
+                displayCurrency: 'SYP',
+                businessName: '',
+                ownerSignature: ''
+            });
+            currentUser = { uid: user.uid, subscriptionStatus: 'trial', trialStartDate: new Date() };
+            await loadAllDataFromFirestore();
+            checkPinOnLoad();
+        }
+    } catch (error) {
+        console.error('Error in checkSubscriptionAndShowApp:', error);
+        // حتى لو حصل خطأ، نعرض التطبيق للمستخدم
+        currentUser = { uid: user.uid, subscriptionStatus: 'trial', trialStartDate: new Date() };
+        try { await loadAllDataFromFirestore(); } catch(e) {}
+        checkPinOnLoad();
+    }
+}
+
+// ==================== فحص رمز PIN عند الدخول ====================
+function checkPinOnLoad() {
+    document.getElementById('authSection').style.display = 'none';
+    document.getElementById('registerSection').style.display = 'none';
+    document.getElementById('subscriptionSection').style.display = 'none';
+    document.getElementById('mainContainer').style.display = 'block';
+
+    if (settings.pin) {
+        showModal('أدخل رمز PIN للدخول', function(input) {
+            if (input === settings.pin) {
+                hideModal();
+                openPage('analytics');
+                updateAllTables();
+            } else {
+                alert('رمز PIN غير صحيح');
+                checkPinOnLoad();
+            }
+        }, true);
+        // إخفاء الصفحات حتى إدخال الرمز الصحيح
+        document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+    } else {
+        openPage('analytics');
+        updateAllTables();
+    }
+}
+
+// استعادة كلمة المرور
+async function resetPassword() {
+    const email = document.getElementById('authEmail').value.trim();
+    if (!email) {
+        alert('يرجى إدخال بريدك الإلكتروني أولاً');
+        return;
+    }
+    try {
+        await auth.sendPasswordResetEmail(email);
+        alert('تم إرسال رابط استعادة كلمة المرور إلى بريدك الإلكتروني');
+    } catch (error) {
+        alert('خطأ: ' + error.message);
+    }
+}
+
+
+// فحص المدير وإظهار أزرار الإدارة
+function checkAdminAccess() {
+    const user = auth.currentUser;
+    if (user && user.email && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+        const adminNavBtn = document.getElementById('adminNavBtn');
+        const adminDropBtn = document.getElementById('adminDropBtn');
+        if (adminNavBtn) adminNavBtn.style.display = 'block';
+        if (adminDropBtn) adminDropBtn.style.display = 'block';
+        console.log('تم تفعيل وضع المدير');
+    } else {
+        console.log('المستخدم ليس مديراً:', user ? user.email : 'لا يوجد');
+    }
+}
+
+
+// فحص الجلسة تلقائياً عند فتح التطبيق
+auth.onAuthStateChanged(async (user) => {
+    if (user) {
+        try {
+            await checkSubscriptionAndShowApp();
+        } catch (error) {
+            console.error('خطأ في استعادة الجلسة:', error);
+            showLogin();
+        }
+    } else {
+        showLogin();
+    }
+    // إخفاء شاشة التحميل بعد كل شيء
+    setTimeout(hideLoading, 500);
+});
+
+
+function hideLoading() {
+    const loading = document.getElementById('loadingScreen');
+    if (loading) loading.style.display = 'none';
+}
+function showLoading() {
+    const loading = document.getElementById('loadingScreen');
+    if (loading) loading.style.display = 'flex';
+}

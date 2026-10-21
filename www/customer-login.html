@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#667eea">
+<link rel="manifest" href="manifest-shop1st.json">
+<link rel="icon" type="image/svg+xml" href="icon-shop1st.svg">
+<link rel="apple-touch-icon" href="icon-shop1st.svg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Shop1st">
+<title>دخول — Shop1st</title>
+<script src="js/locations.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    color: #2c3e50;
+    -webkit-tap-highlight-color: transparent;
+}
+.card {
+    background: white;
+    border-radius: 24px;
+    width: 100%;
+    max-width: 420px;
+    padding: 28px 24px 24px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.3);
+    animation: cardIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes cardIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.96); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.logo-wrap {
+    text-align: center;
+    margin-bottom: 20px;
+}
+.logo-box {
+    width: 88px;
+    height: 88px;
+    margin: 0 auto 14px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 12px 28px rgba(102,126,234,0.4);
+    padding: 8px;
+    box-sizing: border-box;
+}
+.app-name {
+    font-size: 26px;
+    font-weight: 900;
+    color: #2c3e50;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+.app-tagline {
+    font-size: 12px;
+    color: #7f8c8d;
+    font-weight: 600;
+}
+.tabs {
+    display: flex;
+    background: #f5f7fa;
+    border-radius: 14px;
+    padding: 4px;
+    margin-bottom: 20px;
+}
+.tab-btn {
+    flex: 1;
+    padding: 11px;
+    background: transparent;
+    border: none;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 800;
+    color: #7f8c8d;
+    cursor: pointer;
+    transition: all 0.25s;
+}
+.tab-btn.active {
+    background: white;
+    color: #667eea;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.field {
+    position: relative;
+    margin-bottom: 12px;
+}
+.field-icon {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    opacity: 0.55;
+    pointer-events: none;
+}
+.field input {
+    width: 100%;
+    padding: 15px 48px 15px 16px;
+    border: 2px solid #e9ecef;
+    border-radius: 14px;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    background: #f8f9fa;
+    transition: all 0.2s;
+}
+.field input:focus {
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(102,126,234,0.1);
+}
+.field select {
+    width: 100%;
+    padding: 15px 48px 15px 16px;
+    border: 2px solid #e9ecef;
+    border-radius: 14px;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    background: #f8f9fa;
+    transition: all 0.2s;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237f8c8d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: left 14px center;
+    background-size: 18px;
+}
+.field select:focus {
+    border-color: #667eea;
+    background-color: white;
+    box-shadow: 0 0 0 4px rgba(102,126,234,0.1);
+}
+.field input.pass-input {
+    padding-left: 52px;
+}
+.pass-toggle {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 8px;
+    opacity: 0.6;
+    font-family: inherit;
+}
+.btn-primary {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(102,126,234,0.4);
+    transition: all 0.15s;
+    margin-top: 4px;
+}
+.btn-primary:active { transform: scale(0.97); }
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+.link {
+    display: block;
+    text-align: center;
+    font-size: 12px;
+    color: #667eea;
+    font-weight: 700;
+    text-decoration: none;
+    margin-top: 14px;
+    cursor: pointer;
+}
+.link:hover { text-decoration: underline; }
+.terms-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    margin-bottom: 14px;
+    font-size: 12px;
+    color: #4a5568;
+    line-height: 1.6;
+    cursor: pointer;
+}
+.terms-label input {
+    width: 18px;
+    height: 18px;
+    accent-color: #667eea;
+    cursor: pointer;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+.terms-label a {
+    color: #667eea;
+    font-weight: 800;
+    text-decoration: none;
+}
+.terms-label a:hover { text-decoration: underline; }
+.footer {
+    text-align: center;
+    font-size: 11px;
+    color: #95a5a6;
+    padding-top: 18px;
+    margin-top: 18px;
+    border-top: 1px solid #ecf0f1;
+}
+.footer a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 700;
+    margin: 0 6px;
+}
+/* Toast */
+.toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #2c3e50;
+    color: white;
+    padding: 14px 22px;
+    border-radius: 28px;
+    font-size: 13px;
+    font-weight: 800;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.3);
+    z-index: 9999;
+    opacity: 0;
+    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    max-width: 88%;
+    text-align: center;
+    pointer-events: none;
+}
+.toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+.toast.success { background: linear-gradient(135deg, #27ae60, #2ecc71); }
+.toast.error { background: linear-gradient(135deg, #c0392b, #e74c3c); }
+.toast.warning { background: linear-gradient(135deg, #d68910, #f39c12); }
+.toast.info { background: linear-gradient(135deg, #2c3e50, #34495e); }
+/* Loading */
+.loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 9998;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+.loading-overlay.show { display: flex; }
+.spinner {
+    width: 56px;
+    height: 56px;
+    border: 4px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="card">
+
+    <div class="logo-wrap">
+        <div class="logo-box">
+            <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block;">
+                <path d="M3 12 L11 12 L18 42 C18.4 44.4 20.4 46 22.8 46 L44 46 C46.4 46 48.4 44.4 48.8 42 L54 19 L13 19"
+                      fill="none" stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M27.5 30 L33.5 25.5 L33.5 39.5 M30.5 39.5 L36.5 39.5"
+                      fill="none" stroke="#FFD54A" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="24" cy="55" r="3.2" fill="white"/>
+                <circle cx="44" cy="55" r="3.2" fill="white"/>
+                <path d="M53 4 L54.4 8 L58 9.4 L54.4 10.8 L53 15 L51.6 10.8 L48 9.4 L51.6 8 Z" fill="#FFD54A"/>
+            </svg>
+        </div>
+        <div class="app-name">Shop1st</div>
+        <div class="app-tagline">متاجر المدير AI في مكان واحد</div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" id="tabLogin" onclick="showTab('login')">🔑 دخول</button>
+        <button class="tab-btn" id="tabRegister" onclick="showTab('register')">✨ حساب جديد</button>
+    </div>
+
+    <!-- Login form -->
+    <div id="loginForm">
+        <div class="field">
+            <span class="field-icon">📧</span>
+            <input type="email" id="loginEmail" placeholder="البريد الإلكتروني" autocomplete="email">
+        </div>
+        <div class="field">
+            <span class="field-icon">🔒</span>
+            <input type="password" id="loginPassword" class="pass-input" placeholder="كلمة المرور" autocomplete="current-password">
+            <button class="pass-toggle" onclick="_togglePass('loginPassword', this)" type="button">👁️</button>
+        </div>
+        <button class="btn-primary" id="loginBtn" onclick="doLogin()">🚀 دخول</button>
+        <a class="link" onclick="doForgotPassword()">نسيت كلمة المرور؟</a>
+    </div>
+
+    <!-- Register form -->
+    <div id="registerForm" style="display:none;">
+        <div class="field">
+            <span class="field-icon">👤</span>
+            <input type="text" id="regName" placeholder="الاسم الكامل">
+        </div>
+        <div class="field">
+            <span class="field-icon">📧</span>
+            <input type="email" id="regEmail" placeholder="البريد الإلكتروني" autocomplete="email">
+        </div>
+        <div class="field">
+            <span class="field-icon">🌍</span>
+            <select id="regCountry" onchange="_onCountryChange()">
+                <option value="SY" selected>🇸🇾 سوريا (+963)</option>
+                <option value="LB">🇱🇧 لبنان (+961)</option>
+                <option value="JO">🇯🇴 الأردن (+962)</option>
+                <option value="IQ">🇮🇶 العراق (+964)</option>
+                <option value="SA">🇸🇦 السعودية (+966)</option>
+                <option value="EG">🇪🇬 مصر (+20)</option>
+                <option value="PS">🇵🇸 فلسطين (+970)</option>
+            </select>
+        </div>
+        <div class="field">
+            <span class="field-icon">🏛️</span>
+            <select id="regGovernorate">
+                <option value="">— اختر المحافظة —</option>
+            </select>
+        </div>
+        <div class="field">
+            <span class="field-icon">🏘️</span>
+            <input type="text" id="regTown" placeholder="البلدة / الحي (مثال: مصياف)">
+        </div>
+        <div class="field">
+            <span class="field-icon">📱</span>
+            <input type="tel" id="regPhone" placeholder="09XXXXXXXX" inputmode="numeric" maxlength="10">
+        </div>
+        <div class="field">
+            <span class="field-icon">🔒</span>
+            <input type="password" id="regPassword" class="pass-input" placeholder="كلمة المرور (6 أحرف على الأقل)" autocomplete="new-password">
+            <button class="pass-toggle" onclick="_togglePass('regPassword', this)" type="button">👁️</button>
+        </div>
+        <label class="terms-label">
+            <input type="checkbox" id="regTerms">
+            <span>أوافق على <a href="terms.html" target="_blank">شروط الخدمة</a> و <a href="privacy.html" target="_blank">سياسة الخصوصية</a></span>
+        </label>
+        <button class="btn-primary" id="regBtn" onclick="doRegister()">✨ إنشاء الحساب</button>
+    </div>
+
+    <div class="footer">
+        © 2026 Shop1st
+        <div style="margin-top:6px;">
+            <a href="privacy.html">الخصوصية</a> · <a href="terms.html">الشروط</a>
+        </div>
+    </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div></div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+<script>
+(function() {
+    'use strict';
+
+    // ═══ Firebase Init ═══
+    const firebaseConfig = {
+        apiKey: "AIzaSyB08RzcPJe9B1gElNfgqS-hr-C8eTROQLw",
+        authDomain: "jasoft-8bae9.firebaseapp.com",
+        projectId: "jasoft-8bae9",
+        storageBucket: "jasoft-8bae9.firebasestorage.app",
+        messagingSenderId: "263989164835",
+        appId: "1:263989164835:web:1fa891e67b032d8503aa96",
+        measurementId: "G-VG4844PBW6"
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // ═══ Helpers ═══
+    let _toastTimer = null;
+    window._toast = function(msg, type) {
+        const el = document.getElementById('toast');
+        el.className = 'toast show ' + (type || 'info');
+        el.textContent = msg;
+        clearTimeout(_toastTimer);
+        _toastTimer = setTimeout(() => {
+            el.classList.remove('show');
+        }, 3200);
+    };
+
+    window._setLoading = function(on) {
+        const el = document.getElementById('loadingOverlay');
+        el.classList.toggle('show', !!on);
+    };
+
+    window._togglePass = function(id, btn) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (el.type === 'password') {
+            el.type = 'text';
+            btn.textContent = '🙈';
+        } else {
+            el.type = 'password';
+            btn.textContent = '👁️';
+        }
+    };
+
+    window.showTab = function(tab) {
+        const loginForm = document.getElementById('loginForm');
+        const regForm = document.getElementById('registerForm');
+        const loginTab = document.getElementById('tabLogin');
+        const regTab = document.getElementById('tabRegister');
+
+        if (tab === 'login') {
+            loginForm.style.display = 'block';
+            regForm.style.display = 'none';
+            loginTab.classList.add('active');
+            regTab.classList.remove('active');
+        } else {
+            loginForm.style.display = 'none';
+            regForm.style.display = 'block';
+            loginTab.classList.remove('active');
+            regTab.classList.add('active');
+        }
+    };
+
+    // 🎯 متغير عالمي لبيانات المستخدم الحالي (للتحقق من النوع)
+    let currentUserData = null;
+
+    // 🚫 Modal حاجب عند محاولة التاجر/الموظف دخول Shop1st
+    window._showWrongAccountType = function(type) {
+        document.getElementById('wrongTypeModal')?.remove();
+
+        // 🎯 كشف ذكي للنوع — يدعم الحسابات القديمة بلا accountType
+        let typeLabel;
+        if (type === 'merchant' || type === 'تاجر') {
+            typeLabel = 'تاجر 🏪';
+        } else if (type === 'employee' || type === 'موظف') {
+            typeLabel = 'موظف 👨‍💼';
+        } else if (type) {
+            typeLabel = type;
+        } else {
+            // حساب غير معروف — نتحقق من الحقول الأخرى
+            const u = currentUserData || {};
+            if (u.isEmployee === true || u.businessType === 'موظفين') {
+                typeLabel = 'موظف 👨‍💼';
+            } else if (u.businessName || u.businessType) {
+                typeLabel = 'تاجر 🏪';
+            } else {
+                typeLabel = 'حساب غير مصرّح به';
+            }
+        }
+        const modal = document.createElement('div');
+        modal.id = 'wrongTypeModal';
+        modal.style.cssText = 'position:fixed;inset:0;background:#1a1a2e;z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;font-family:inherit;direction:rtl;';
+
+        modal.innerHTML = `
+            <div style="background:white;border-radius:20px;max-width:400px;width:100%;padding:28px 24px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+                <div style="font-size:56px;margin-bottom:14px;">⚠️</div>
+                <div style="font-size:18px;font-weight:900;color:#2c3e50;margin-bottom:10px;">
+                    أنت مسجّل كـ ${typeLabel}
+                </div>
+                <div style="font-size:13px;color:#7f8c8d;line-height:1.8;margin-bottom:24px;">
+                    هذا التطبيق مخصص للعملاء فقط.<br>
+                    الرجاء استخدام التطبيق المخصص لإدارة متجرك.
+                </div>
+
+                <button onclick="_signOutAndReload()" style="width:100%;padding:14px;background:linear-gradient(135deg,#e74c3c,#c0392b);color:white;border:none;border-radius:12px;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit;box-shadow:0 6px 20px rgba(231,76,60,0.35);">
+                    🚪 تسجيل الخروج
+                </button>
+            </div>`;
+        document.body.appendChild(modal);
+    };
+
+    window._signOutAndReload = async function() {
+        try {
+            _setLoading(true);
+            await auth.signOut();
+            localStorage.removeItem('customer_return_url');
+            location.reload();
+        } catch(e) {
+            console.warn('[signOut]', e);
+            location.reload();
+        }
+    };
+
+    // ═══ Redirect after success ═══
+    function _redirectAfterAuth() {
+        const returnUrl = localStorage.getItem('customer_return_url');
+        if (returnUrl) {
+            localStorage.removeItem('customer_return_url');
+            location.href = returnUrl;
+        } else {
+            location.href = 'customer.html';
+        }
+    }
+
+    // ═══ Login ═══
+    window.doLogin = async function() {
+        const email = document.getElementById('loginEmail').value.trim();
+        const password = document.getElementById('loginPassword').value;
+        const btn = document.getElementById('loginBtn');
+
+        if (!email) { _toast('⚠️ أدخل البريد الإلكتروني', 'warning'); return; }
+        if (!password) { _toast('⚠️ أدخل كلمة المرور', 'warning'); return; }
+
+        btn.disabled = true;
+        _setLoading(true);
+
+        try {
+            const cred = await auth.signInWithEmailAndPassword(email, password);
+            const user = cred.user;
+
+            // Check email verified
+            if (!user.emailVerified) {
+                await auth.signOut();
+                _setLoading(false);
+                btn.disabled = false;
+                _toast('📧 يرجى تفعيل بريدك الإلكتروني أولاً', 'warning');
+                return;
+            }
+
+            // Check user doc + accountType
+            const snap = await db.collection('users').doc(user.uid).get();
+            if (!snap.exists) {
+                await auth.signOut();
+                _setLoading(false);
+                btn.disabled = false;
+                _toast('⚠️ الحساب غير موجود', 'error');
+                return;
+            }
+
+            const data = snap.data();
+            currentUserData = data;  // 🎯 للاستخدام في _showWrongAccountType
+
+            // 🎯 كشف نوع الحساب (يدعم القديم بلا accountType)
+            const accType = data.accountType
+                || (data.isEmployee ? 'employee' : (data.businessName || data.businessType ? 'merchant' : null));
+
+            if (accType !== 'customer') {
+                _setLoading(false);
+                btn.disabled = false;
+                _showWrongAccountType(accType);
+                return;
+            }
+
+            // Success
+            _toast('✅ مرحباً ' + (data.fullName || '') + '!', 'success');
+            setTimeout(_redirectAfterAuth, 600);
+
+        } catch(e) {
+            console.error('[login]', e);
+            _setLoading(false);
+            btn.disabled = false;
+            let msg = 'فشل الدخول — حاول مرة أخرى';
+            if (e.code === 'auth/user-not-found') msg = 'البريد غير مسجل';
+            else if (e.code === 'auth/wrong-password') msg = 'كلمة المرور خاطئة';
+            else if (e.code === 'auth/invalid-credential') msg = 'البريد أو كلمة المرور غير صحيحة';
+            else if (e.code === 'auth/invalid-email') msg = 'البريد غير صحيح';
+            else if (e.code === 'auth/too-many-requests') msg = 'محاولات كثيرة — حاول لاحقاً';
+            else if (e.code === 'auth/user-disabled') msg = 'تم حظر هذا الحساب';
+            else if (e.code === 'auth/network-request-failed') msg = 'تحقق من اتصالك بالإنترنت';
+            _toast('❌ ' + msg, 'error');
+        }
+    };
+
+    // ═══ Countries + Phone Validation ═══
+    const COUNTRIES = {
+        SY: { name: 'سوريا',   code: '+963', regex: /^09\d{8}$/,  placeholder: '09XXXXXXXX', maxLen: 10 },
+        LB: { name: 'لبنان',   code: '+961', regex: /^\d{7,8}$/,  placeholder: '1234567',    maxLen: 8  },
+        JO: { name: 'الأردن',  code: '+962', regex: /^07\d{8}$/,  placeholder: '07XXXXXXXX', maxLen: 10 },
+        IQ: { name: 'العراق',  code: '+964', regex: /^07\d{9}$/,  placeholder: '07XXXXXXXXX',maxLen: 11 },
+        SA: { name: 'السعودية',code: '+966', regex: /^05\d{8}$/,  placeholder: '05XXXXXXXX', maxLen: 10 },
+        EG: { name: 'مصر',     code: '+20',  regex: /^01\d{9}$/,  placeholder: '01XXXXXXXXX',maxLen: 11 },
+        PS: { name: 'فلسطين',  code: '+970', regex: /^05\d{8}$/,  placeholder: '05XXXXXXXX', maxLen: 10 }
+    };
+
+    window._onCountryChange = function() {
+        const country = document.getElementById('regCountry').value;
+        const info = COUNTRIES[country];
+        if (!info) return;
+
+        // تحديث حقل الهاتف
+        const phoneEl = document.getElementById('regPhone');
+        phoneEl.placeholder = info.placeholder;
+        phoneEl.maxLength = info.maxLen;
+        phoneEl.value = '';
+
+        // تحديث قائمة المحافظات
+        const govEl = document.getElementById('regGovernorate');
+        const townEl = document.getElementById('regTown');
+
+        if (typeof LOCATIONS !== 'undefined' && LOCATIONS[info.code]) {
+            const govs = LOCATIONS[info.code].governorates || [];
+            govEl.innerHTML = '<option value="">— اختر المحافظة —</option>' +
+                govs.map(g => '<option value="' + g + '">' + g + '</option>').join('');
+            govEl.disabled = false;
+            townEl.disabled = false;
+            townEl.value = '';
+        } else {
+            // الدولة غير مدعومة في LOCATIONS
+            govEl.innerHTML = '<option value="">— غير متوفر —</option>';
+            govEl.disabled = true;
+            townEl.disabled = true;
+            townEl.value = '';
+        }
+    };
+
+    // ═══ Register ═══
+    window.doRegister = async function() {
+        const name = document.getElementById('regName').value.trim();
+        const email = document.getElementById('regEmail').value.trim();
+        const country = document.getElementById('regCountry').value;
+        const governorate = document.getElementById('regGovernorate').value.trim();
+        const town = document.getElementById('regTown').value.trim();
+        const phone = document.getElementById('regPhone').value.replace(/\D/g, '');
+        const password = document.getElementById('regPassword').value;
+        const terms = document.getElementById('regTerms').checked;
+        const btn = document.getElementById('regBtn');
+
+        const info = COUNTRIES[country];
+        if (!info) { _toast('⚠️ اختر البلد', 'warning'); return; }
+        if (!name || name.length < 3) { _toast('⚠️ الاسم يجب أن يكون 3 أحرف على الأقل', 'warning'); return; }
+        if (!email) { _toast('⚠️ أدخل البريد الإلكتروني', 'warning'); return; }
+        if (!governorate) { _toast('⚠️ اختر المحافظة', 'warning'); return; }
+        if (!town) { _toast('⚠️ أدخل البلدة / الحي', 'warning'); return; }
+        if (!phone) { _toast('⚠️ أدخل رقم الهاتف', 'warning'); return; }
+        if (!info.regex.test(phone)) {
+            _toast('⚠️ رقم هاتف غير صحيح لـ ' + info.name + ' (مثال: ' + info.placeholder + ')', 'warning');
+            return;
+        }
+        if (!password || password.length < 6) { _toast('⚠️ كلمة المرور يجب أن تكون 6 أحرف على الأقل', 'warning'); return; }
+        if (!terms) { _toast('⚠️ يجب الموافقة على الشروط', 'warning'); return; }
+
+        btn.disabled = true;
+        _setLoading(true);
+
+        try {
+            // 🔍 فحص phone_registry — منع التسجيل المزدوج
+            const normalizedPhone = info.code.replace('+', '') + phone.replace(/^0+/, '');
+            const regSnap = await db.collection('phone_registry').doc(normalizedPhone).get();
+
+            if (regSnap.exists) {
+                const existing = regSnap.data();
+                _setLoading(false);
+                btn.disabled = false;
+
+                if (existing.accountType === 'customer') {
+                    _toast('📱 هذا الرقم مسجّل مسبقاً — سجّل دخولك من التطبيق', 'warning');
+                } else {
+                    _toast('⚠️ هذا الرقم مسجّل بنوع حساب مختلف — استخدم رقماً آخر', 'error');
+                }
+                return;
+            }
+
+            const cred = await auth.createUserWithEmailAndPassword(email, password);
+            const user = cred.user;
+
+            // Save user doc
+            await db.collection('users').doc(user.uid).set({
+                fullName: name,
+                email: email,
+                phone: phone,
+                country: country,
+                countryCode: info.code,
+                accountType: 'customer',
+                location: { governorate: governorate, town: town, district: '' },
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            // 📱 حفظ في phone_registry (لمنع التسجيل المزدوج)
+            await db.collection('phone_registry').doc(normalizedPhone).set({
+                uid: user.uid,
+                accountType: 'customer',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            // Send verification
+            await user.sendEmailVerification();
+
+            await auth.signOut();
+
+            _setLoading(false);
+            btn.disabled = false;
+            _toast('✅ تم إنشاء الحساب! تحقق من بريدك للتفعيل', 'success');
+
+            setTimeout(() => {
+                showTab('login');
+                document.getElementById('loginEmail').value = email;
+                document.getElementById('loginPassword').focus();
+            }, 2000);
+
+        } catch(e) {
+            console.error('[register]', e);
+            _setLoading(false);
+            btn.disabled = false;
+            let msg = 'فشل التسجيل';
+            if (e.code === 'auth/email-already-in-use') msg = 'البريد مستخدم مسبقاً';
+            else if (e.code === 'auth/invalid-email') msg = 'البريد غير صحيح';
+            else if (e.code === 'auth/weak-password') msg = 'كلمة المرور ضعيفة';
+            _toast('❌ ' + msg, 'error');
+        }
+    };
+
+    // ═══ Forgot Password ═══
+    window.doForgotPassword = async function() {
+        const email = document.getElementById('loginEmail').value.trim();
+        if (!email) {
+            _toast('📧 أدخل بريدك أولاً في حقل البريد', 'warning');
+            return;
+        }
+        try {
+            await auth.sendPasswordResetEmail(email);
+            _toast('✅ تم إرسال رابط الاستعادة إلى بريدك', 'success');
+        } catch(e) {
+            console.error('[forgot]', e);
+            let msg = 'فشل الإرسال';
+            if (e.code === 'auth/user-not-found') msg = 'البريد غير مسجل';
+            else if (e.code === 'auth/invalid-email') msg = 'البريد غير صحيح';
+            _toast('❌ ' + msg, 'error');
+        }
+    };
+
+    // ═══ Auto-redirect if already logged in ═══
+    let _initialCheckDone = false;
+    auth.onAuthStateChanged(async (user) => {
+        if (_initialCheckDone) return;
+        _initialCheckDone = true;
+
+        if (!user) return;
+
+        try {
+            const snap = await db.collection('users').doc(user.uid).get();
+            if (!snap.exists) return;
+
+            const data = snap.data();
+            currentUserData = data;
+
+            // 🎯 كشف نوع الحساب (يدعم القديم)
+            const accType = data.accountType
+                || (data.isEmployee ? 'employee' : (data.businessName || data.businessType ? 'merchant' : null));
+
+            if (accType === 'customer' && user.emailVerified) {
+                console.log('🛒 [login] already authenticated — redirecting');
+                _redirectAfterAuth();
+            } else if (accType !== 'customer') {
+                console.log('[login] non-customer signed in:', accType);
+                _showWrongAccountType(accType);
+            }
+        } catch(e) {
+            console.warn('[auth-check]', e);
+        }
+    });
+
+    // تهيئة محافظات البلد الافتراضي (سوريا)
+    _onCountryChange();
+
+    // Focus initial
+    setTimeout(() => document.getElementById('loginEmail')?.focus(), 300);
+
+    console.log('🛒 [customer-login] ready');
+
+})();
+</script>
+</body>
+</html>

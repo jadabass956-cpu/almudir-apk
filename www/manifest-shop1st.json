@@ -1,0 +1,28 @@
+{
+  "name": "Shop1st — متاجر المدير AI في مكان واحد",
+  "short_name": "Shop1st",
+  "description": "تسوّق من متاجر منطقتك — طلب سريع، توصيل سهل",
+  "start_url": "customer.html",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#667eea",
+  "lang": "ar",
+  "dir": "rtl",
+  "categories": ["shopping", "food", "lifestyle"],
+  "icons": [
+    {
+      "src": "icon-shop1st.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-shop1st-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

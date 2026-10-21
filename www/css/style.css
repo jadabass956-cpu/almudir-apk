@@ -1,0 +1,785 @@
+:root {
+    /* ═══ 🌉 جسر إلى tokens.css — بدون تغيير بصري ═══ */
+    --primary: #2c3e50;                         /* محفوظ: tokens يستخدم نفس القيمة */
+    --secondary: #34495e;                       /* محفوظ: لا مقابل دقيق */
+    --accent: var(--color-info);                /* ← #3498db — موحّد */
+    --success: var(--color-success);            /* ← #27ae60 — موحّد */
+    --danger: var(--color-danger);              /* ← #e74c3c — موحّد */
+    --warning: var(--color-warning);            /* ← #f39c12 — موحّد */
+    --light: #ecf0f1;                           /* محفوظ: لا مقابل دقيق */
+    --white: #ffffff;                           /* محفوظ: tokens يستخدم نفس القيمة */
+    --shadow: var(--shadow-md);                 /* ← 0 4px 6px rgba(0,0,0,0.1) — موحّد */
+    --radius: var(--radius-lg);                 /* ← 12px — موحّد */
+    --transition: 0.3s ease;                    /* محفوظ: tokens يستخدم نفس القيمة */
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html {
+    overflow-x: hidden;
+    width: 100%;
+}
+
+body {
+    font-family: var(--font-family);
+    background: #f5f7fa;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.container {
+    width: 100%;
+    max-width: 1000px;
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: visible;
+    margin-bottom: 20px;
+}
+
+.header {
+    background: linear-gradient(135deg, #1e2b3a, #2c3e50);
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.header .logo h1 { font-size: 28px; font-weight: 900; letter-spacing: 3px; }
+.header .logo p { font-size: 12px; opacity: 0.85; }
+
+/* زر القائمة الجانبية */
+#hamburgerBtn,
+.menu-toggle {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    width: 45px;
+    height: 45px;
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 22px;
+    cursor: pointer;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.main-nav { display: none; }
+
+.dropdown-menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 75%;
+    max-width: 300px;
+    height: 100vh;
+    max-height: 100vh;
+    background: var(--secondary);
+    z-index: 10000;
+    padding-top: 0;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.3);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+}
+
+/* منع تمرير الصفحة عند فتح القائمة */
+body.menu-open {
+    overflow: hidden !important;
+}
+.dropdown-menu.show {
+    transform: translateX(0);
+}
+.dropdown-menu button {
+    background: transparent;
+    border: none;
+    color: white;
+    padding: 15px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    text-align: right;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.dropdown-menu button:hover { background: rgba(255,255,255,0.1); }
+
+.page {
+    display: none;
+    padding: 15px;
+    animation: fadeIn 0.3s ease;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+}
+
+.page.active {
+    width: 100%;
+    box-sizing: border-box;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.btn-back {
+    background: var(--secondary);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+.btn-back:hover { background: var(--primary); }
+
+h2 {
+    color: var(--primary);
+    margin-bottom: 15px;
+    text-align: center;
+    font-size: 24px;
+    border-bottom: 2px solid var(--light);
+    padding-bottom: 10px;
+}
+h3 { color: var(--secondary); margin: 20px 0 10px 0; font-size: 18px; }
+
+label { display: block; margin-bottom: 4px; font-size: 13px; color: var(--secondary); font-weight: bold; }
+input, select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    margin-bottom: 10px;
+    background: #fafafa;
+}
+input:focus, select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(52,152,219,0.2);
+    background: white;
+}
+
+.btn-save {
+    background: var(--success);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 5px;
+}
+.btn-save:hover { background: #219a52; }
+
+.btn-print {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 5px;
+}
+.btn-print:hover { background: #2980b9; }
+
+.btn-delete { background: var(--danger); color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 11px; }
+.btn-edit { background: var(--warning); color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 11px; }
+.btn-settle { background: var(--success); color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 11px; }
+
+table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+th, td { border: 1px solid #e0e0e0; padding: 8px; text-align: center; }
+th { background: var(--primary); color: white; font-weight: bold; }
+tr:nth-child(even) { background: #f9f9f9; }
+tr:hover { background: #f1f1f1; }
+
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    display: block;
+}
+.table-responsive table { min-width: 650px; }
+
+.balance-card {
+    background: linear-gradient(135deg, #3498db, #2c3e50);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    margin: 20px 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    gap: 10px;
+}
+.balance-card div { background: rgba(255,255,255,0.15); padding: 10px 20px; border-radius: 8px; flex: 1; min-width: 120px; }
+
+.low-stock { background: #ffebee; color: #c62828; font-weight: bold; }
+.profit-positive { color: var(--success); font-weight: bold; }
+.profit-negative { color: var(--danger); font-weight: bold; }
+
+.alert-bar { background: #ffe0b2; padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; display: none; font-weight: bold; color: #e65100; }
+
+.stats-container { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 20px; }
+.stat-card { flex: 1 1 200px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+.stat-card .stat-title { font-size: 14px; opacity: 0.9; margin-bottom: 8px; }
+.stat-card .stat-value { font-size: 24px; font-weight: bold; }
+
+/* النوافذ المنبثقة */
+.modal-overlay,
+#paymentModalOverlay,
+#confirmOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    display: none;
+    z-index: 10000;
+    overflow-y: auto;
+    padding: 20px;
+    box-sizing: border-box;
+    align-items: center;
+    justify-content: center;
+}
+.modal-overlay.show,
+#paymentModalOverlay.show,
+#confirmOverlay.show {
+    display: flex;
+}
+.modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 320px;
+    text-align: center;
+    margin: auto;
+    max-height: 85vh;
+    overflow-y: auto;
+}
+.modal-content h3 { margin-bottom: 15px; color: var(--text-primary); }
+.modal-content input { text-align: center; font-size: 18px; margin-bottom: 15px; }
+.modal-content button { padding: 10px 20px; margin: 5px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+.modal-content .btn-confirm { background: var(--color-success); color: white; }
+.modal-content .btn-cancel { background: var(--color-danger); color: white; }
+
+/* استجابة الموبايل */
+@media (max-width: 768px) {
+    .modal-content { max-width: 85%; padding: 15px; }
+    .modal-content input { font-size: 16px; }
+    .modal-content button { padding: 8px 15px; font-size: 14px; }
+    .table-responsive table { min-width: 600px; }
+}
+
+/* زر القائمة الجانبية */
+#hamburgerBtn {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    width: 45px;
+    height: 45px;
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 22px;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* القائمة الجانبية */
+#dropdownMenu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 75%;
+    max-width: 300px;
+    height: 100%;
+    background: #2c3e50;
+    z-index: 10000;
+    padding-top: 60px;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+#dropdownMenu.show {
+    transform: translateX(0);
+}
+#dropdownMenu button {
+    background: transparent;
+    border: none;
+    color: white;
+    padding: 15px 20px;
+    text-align: right;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    font-size: 16px;
+}
+
+/* شريط الفلتر */
+.filter-bar {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+.filter-bar select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+}
+canvas {
+    max-width: 100%;
+    background: white;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+/* نافذة المحادثة الذكية */
+#aiChatOverlay {
+    display: none;
+}
+#aiChatOverlay.show {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+}
+
+
+/* ============================================================
+   ✨ ALMUDIR — Sidebar Header (User Info)
+   ============================================================ */
+.dropdown-menu {
+    padding-top: 0 !important;
+}
+
+.sidebar-header {
+    background: linear-gradient(135deg, #1a252f 0%, #2c3e50 100%);
+    padding: 20px 18px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    cursor: pointer;
+    border-bottom: 3px solid var(--color-primary);
+    transition: background 0.2s;
+}
+.sidebar-header:hover {
+    background: linear-gradient(135deg, #232f3a 0%, #34495e 100%);
+}
+
+.sidebar-avatar {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: bold;
+    font-family: Arial, sans-serif;
+    box-shadow: 0 3px 10px rgba(230, 126, 34, 0.4);
+    margin-bottom: 4px;
+}
+
+.sidebar-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.sidebar-business {
+    color: #ffffff;
+    font-size: 17px;
+    font-weight: bold;
+    line-height: 1.2;
+}
+
+.sidebar-name {
+    color: #dfe6e9;
+    font-size: 14px;
+    line-height: 1.2;
+}
+
+.sidebar-email {
+    color: #95a5a6;
+    font-size: 11px;
+    line-height: 1.2;
+    word-break: break-all;
+    font-family: Arial, sans-serif;
+}
+
+.sidebar-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    padding: 6px 10px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    font-size: 12px;
+    color: #dfe6e9;
+    width: fit-content;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    background: #95a5a6;
+}
+.status-dot.green  { background: var(--color-success); box-shadow: 0 0 6px var(--color-success); }
+.status-dot.yellow { background: var(--color-warning); box-shadow: 0 0 6px var(--color-warning); }
+.status-dot.red    { background: var(--color-danger); box-shadow: 0 0 6px var(--color-danger); }
+
+.sidebar-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.08);
+    margin: 0;
+}
+
+/* END Sidebar Header */
+
+
+/* ✨ Location in Sidebar */
+.sidebar-location {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #dfe6e9;
+    font-size: 12px;
+    line-height: 1.3;
+    margin-top: 2px;
+}
+
+
+/* ============================================================
+   ✨ ALMUDIR — Section Cards
+   ============================================================ */
+.section-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 15px;
+    margin: 15px 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    border: 1px solid #eee;
+}
+
+.section-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: var(--text-primary);
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+    border-bottom: 2px solid var(--color-primary);
+    display: inline-block;
+}
+
+.grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.grid-2 > div {
+    display: flex;
+    flex-direction: column;
+}
+
+.grid-2 button {
+    width: 100% !important;
+}
+
+@media (max-width: 400px) {
+    .grid-2 {
+        grid-template-columns: 1fr;
+    }
+}
+/* END Section Cards */
+
+
+
+
+
+/* ============================================================
+   ✨ إخفاء الأزرار العائمة في التحميل و QR (نسخة نظيفة)
+   ============================================================ */
+body.loading #mainMenuBtn,
+body.loading #aiChatBtn,
+body.qr-open #mainMenuBtn,
+body.qr-open #aiChatBtn {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+/* END Clean Rules */
+
+
+/* ============================================================
+   ✨ إخفاء الأزرار في شاشات الدخول/التسجيل
+   ============================================================ */
+body.login-screen #mainMenuBtn,
+body.login-screen #aiChatBtn {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+/* END login-screen */
+
+/* ═══════════════════════════════════════════════════════
+   🎨 MENU SECTIONS — قائمة قابلة للطي
+   ═══════════════════════════════════════════════════════ */
+
+.menu-section {
+    margin: 4px 0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.submenu-toggle {
+    width: 100%;
+    padding: 12px 15px;
+    background: rgba(255,255,255,0.08);
+    color: white;
+    border: none;
+    text-align: right;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.2s;
+    font-family: inherit;
+}
+
+.submenu-toggle:hover {
+    background: rgba(255,255,255,0.15);
+}
+
+.submenu-toggle .arrow {
+    transition: transform 0.3s ease;
+    font-size: 10px;
+    opacity: 0.7;
+}
+
+.submenu-toggle.open .arrow {
+    transform: rotate(180deg);
+    opacity: 1;
+}
+
+.submenu {
+    display: none;
+    padding: 4px 0 4px 10px;
+    margin-top: 4px;
+    border-right: 2px solid rgba(255,255,255,0.15);
+    animation: submenuSlide 0.25s ease-out;
+}
+
+.submenu.open {
+    display: block;
+}
+
+@keyframes submenuSlide {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.submenu button {
+    width: 100%;
+    padding: 10px 12px;
+    background: transparent;
+    color: rgba(255,255,255,0.85);
+    border: none;
+    text-align: right;
+    font-size: 13px;
+    cursor: pointer;
+    border-radius: 6px;
+    margin-bottom: 2px;
+    transition: all 0.15s ease;
+    font-family: inherit;
+}
+
+.submenu button:hover {
+    background: rgba(255,255,255,0.12);
+    color: white;
+    padding-right: 16px;
+}
+
+.submenu button.active {
+    background: rgba(255,255,255,0.18);
+    color: white;
+    font-weight: 600;
+}
+
+/* 🔧 تصحيح عرض القوائم المنسدلة (RTL) */
+.submenu-toggle {
+    display: flex !important;
+    flex-direction: row !important;   /* ← إصلاح: من row-reverse إلى row */
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px !important;
+    background: rgba(255,255,255,0.08);
+    border: none;
+    border-radius: 8px;
+    width: 100%;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.submenu-toggle > span:first-child {
+    flex: 1;
+    text-align: right;
+    padding-right: 4px;
+}
+
+.submenu-toggle .arrow {
+    flex: 0 0 auto;
+    font-size: 11px;
+    color: rgba(255,255,255,0.6);
+    transition: transform 0.3s ease;
+    margin-left: 4px;
+}
+
+.submenu-toggle.open .arrow {
+    transform: rotate(180deg);
+    color: var(--color-warning);
+}
+
+/* 🎯 تمييز المفتوح حالياً */
+.menu-section:has(.submenu.open) > .submenu-toggle {
+    background: rgba(255,255,255,0.15);
+    border-right: 3px solid var(--color-warning);
+}
+
+/* 📏 مسافات أفضل */
+.menu-section {
+    margin: 6px 0;
+}
+
+
+/* ═══════════════════════════════════════════════════ */
+/*  🔗 وضع الموظف — إخفاء كل شيء إلا الصفحة المخصصة  */
+/* ═══════════════════════════════════════════════════ */
+
+body.staff-mode #mainMenuBtn,
+body.staff-mode #aiChatBtn,
+body.staff-mode #adminDropBtn,
+body.staff-mode #adminNotifBtn {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* منع فتح القائمة الجانبية */
+body.staff-mode #dropdownMenu {
+    display: none !important;
+}
+
+/* إخفاء البانرات والإشعارات العامة */
+body.staff-mode .expiry-banner,
+body.staff-mode #offlineIndicator {
+    display: none !important;
+}
+
+/* ═══════════════════════════════════════════════════ */
+/*  🔗 وضع الموظف — إخفاء زر الرجوع أيضاً           */
+/* ═══════════════════════════════════════════════════ */
+
+body.staff-mode #globalBackBtn {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   🎨 EMPLOYEE MODE — إخفاء عناصر المالك عن الموظف
+   ═══════════════════════════════════════════════════════════ */
+body.employee-mode .owner-only {
+    display: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   🔧 FIX MODAL — إصلاح position:fixed بعد overflow-x:hidden
+   ═══════════════════════════════════════════════════════════ */
+.fix-modal-overlay,
+#soAcceptModal,
+#roleCodeModal,
+#restPaymentModal,
+#restTableModal,
+#attendanceScannerModal,
+#qrPendingModal,
+#attEditModal,
+#attManualModal,
+#pmCustomerModal,
+#staffCreateModal,
+#roleFormModal,
+#tabletCreatedModal,
+#restAddItemsModal {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: 100vw !important;
+    max-height: 100vh !important;
+    z-index: 2147483646 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+}
+
+/* على الشاشات الصغيرة — من الأسفل */
+@media (max-width: 600px) {
+    #pmCustomerModal,
+    #attendanceScannerModal {
+        align-items: flex-end !important;
+    }
+}

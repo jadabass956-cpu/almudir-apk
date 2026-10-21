@@ -1,0 +1,645 @@
+
+// ===== ALMUDIR: Firebase Persistence =====
+// يجبر Firebase على حفظ الجلسة محلياً (LOCAL) حتى بعد إغلاق التطبيق
+(async () => {
+    try {
+        if (auth && auth.setPersistence && firebase.auth.Auth.Persistence) {
+            await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+            console.log('✅ Firebase persistence = LOCAL');
+        }
+    } catch (e) {
+        console.warn('setPersistence failed:', e);
+    }
+})();
+// ===== END =====
+
+const ADMIN_EMAIL = 'jadabass956@gmail.com';
+// ==================== المتغيرات العامة ====================
+let currentUser = null; // بيانات المستخدم من Firestore
+
+// ==================== دوال إظهار الشاشات ====================
+function showLogin() {
+    document.body.classList.add('login-screen');
+    const menu = document.getElementById('dropdownMenu');
+    if (menu) menu.classList.remove('show');
+    const menuBtn = document.getElementById('mainMenuBtn');
+    if (menuBtn) menuBtn.style.display = 'none';
+    hideLoading();
+    document.getElementById('authSection').style.display = 'block';
+    document.getElementById('registerSection').style.display = 'none';
+    document.getElementById('subscriptionSection').style.display = 'none';
+    document.getElementById('mainContainer').style.display = 'none';
+}
+
+function showRegister() {
+    document.body.classList.add('login-screen');
+    const menu = document.getElementById('dropdownMenu');
+    if (menu) menu.classList.remove('show');
+    document.getElementById('authSection').style.display = 'none';
+    document.getElementById('registerSection').style.display = 'block';
+    document.getElementById('subscriptionSection').style.display = 'none';
+    document.getElementById('mainContainer').style.display = 'none';
+}
+
+function showSubscriptionScreen() {
+    // ✨ استخدم شاشة الحجب الجديدة إن وُجدت
+    if (typeof showExpiredFullScreen === 'function') {
+        try {
+            // أخفِ الأقسام القديمة
+            ['authSection','registerSection','mainContainer'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = 'none';
+            });
+            const old = document.getElementById('subscriptionSection');
+            if (old) old.style.display = 'none';
+
+            showExpiredFullScreen();
+            return;
+        } catch(e) {
+            console.warn('[showSubscriptionScreen] fallback to old:', e.message);
+        }
+    }
+
+    // Fallback — النسخة القديمة
+    const menu = document.getElementById('dropdownMenu');
+    if (menu) menu.classList.remove('show');
+    hideLoading();
+    document.getElementById('authSection').style.display = 'none';
+    document.getElementById('registerSection').style.display = 'none';
+    document.getElementById('subscriptionSection').style.display = 'block';
+    document.getElementById('mainContainer').style.display = 'none';
+}
+
+function showApp() {
+    document.body.classList.remove('login-screen');
+    const menuBtn = document.getElementById('mainMenuBtn');
+    if (menuBtn) menuBtn.style.display = 'block';
+    hideLoading();
+    document.getElementById('authSection').style.display = 'none';
+    document.getElementById('registerSection').style.display = 'none';
+    document.getElementById('subscriptionSection').style.display = 'none';
+    document.getElementById('mainContainer').style.display = 'block';
+    openPage('analytics');
+    updateAllTables();
+}
+
+// ==================== دوال المصادقة ====================
+
+
+// ============================================================
+//  ✨ التحقق الفوري من تطابق كلمة المرور
+// ============================================================
+function checkPasswordMatch() {
+    const pass = document.getElementById('regPassword');
+    const confirm = document.getElementById('regPasswordConfirm');
+    const msg = document.getElementById('passMatchMsg');
+    if (!pass || !confirm || !msg) return;
+
+    if (!confirm.value) {
+        msg.style.display = 'none';
+        return;
+    }
+
+    if (pass.value === confirm.value) {
+        msg.style.display = 'block';
+        msg.style.color = '#27ae60';
+        msg.textContent = '✅ كلمتا المرور متطابقتان';
+        confirm.style.borderColor = '#27ae60';
+    } else {
+        msg.style.display = 'block';
+        msg.style.color = '#e74c3c';
+        msg.textContent = '❌ كلمتا المرور غير متطابقتين';
+        confirm.style.borderColor = '#e74c3c';
+    }
+}
+
+
+
+// ============================================================
+//  ✨ تحديث رمز الهاتف حسب الدولة
+// ============================================================
+function updatePhonePrefix() {
+    const country = document.getElementById('regCountry');
+    const prefix = document.getElementById('regPhonePrefix');
+    if (!country || !prefix) return;
+    
+    const code = country.value;
+    // امسح القائمة الحالية
+    prefix.innerHTML = '';
+    // أضف الرمز الجديد
+    const opt = document.createElement('option');
+    opt.value = code;
+    opt.textContent = code;
+    prefix.appendChild(opt);
+}
+
+async function register() {
+    const fullName = document.getElementById('regFullName').value.trim();
+    const phone = (function() {
+        const prefix = document.getElementById('regPhonePrefix');
+        const phone = document.getElementById('regPhone');
+        const prefixVal = prefix ? prefix.value : '';
+        const phoneVal = phone ? phone.value.trim() : '';
+        return prefixVal + phoneVal;
+    })();
+        const country = document.getElementById('regCountry') ? document.getElementById('regCountry').value : '+963';
+    const email = document.getElementById('regEmail').value.trim();
+    const password = document.getElementById('regPassword').value;
+        const passwordConfirm = document.getElementById('regPasswordConfirm') ? document.getElementById('regPasswordConfirm').value : '';
+
+        if (!password || password.length < 6) {
+            alert('⚠️ كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+            return;
+        }
+        if (password !== passwordConfirm) {
+            alert('❌ كلمتا المرور غير متطابقتين\n\nيرجى التأكد من كتابة نفس كلمة المرور في الحقلين.');
+            return;
+        }
+    const governorate = document.getElementById('regGovernorate').value.trim();
+    const town = document.getElementById('regTown').value.trim();
+    const district = document.getElementById('regDistrict').value.trim();
+    const businessType = document.getElementById('regBusinessType').value;
+    const agreed = document.getElementById('regAgree').checked;
+
+    if (!fullName || !phone || !email || !password || !governorate || !town || !district || !agreed) {
+        document.getElementById('registerError').textContent = 'الرجاء تعبئة جميع الحقول والموافقة على الشروط';
+        return;
+    }
+
+    try {
+        const cred = await auth.createUserWithEmailAndPassword(email, password);
+        const uid = cred.user.uid;
+        // إرسال رابط التفعيل إلى البريد الإلكتروني
+        await cred.user.sendEmailVerification();
+        await db.collection('users').doc(uid).set({
+            fullName,
+            phone,
+            email,
+            location: { governorate, town, district },
+            businessType, countryCode: getSelectedCountryCode(), countryPhonePrefix: getSelectedCountryPhonePrefix(),
+            agreedToTerms: true,
+            trialStartDate: firebase.firestore.FieldValue.serverTimestamp(),
+            subscriptionStatus: 'trial'
+        });
+        alert('تم إنشاء الحساب بنجاح. تم إرسال رابط التفعيل إلى بريدك الإلكتروني.\nإذا لم تجد الرسالة في البريد الوارد، افحص مجلد الرسائل غير المرغوب فيها (Spam).');
+        showLogin();
+    } catch (error) {
+        document.getElementById('registerError').textContent = getArabicError(error);
+    }
+}
+
+async function login() {
+    const email = document.getElementById('authEmail').value.trim();
+    const password = document.getElementById('authPassword').value;
+    try {
+        await auth.signInWithEmailAndPassword(email, password);
+        await checkSubscriptionAndShowApp();
+    } catch (error) {
+        document.getElementById('loginError').textContent = getArabicError(error);
+    }
+}
+
+async function logout() {
+    document.body.classList.remove('app-ready');
+    stopListeningToUserData();
+    await auth.signOut();
+    currentUser = null;
+    showLogin();
+}
+
+// ==================== فحص الاشتراك ====================
+async function checkSubscriptionAndShowApp() {
+    document.body.classList.remove('loading');
+    const user = auth.currentUser;
+    if (!user) {
+        showLogin();
+        return;
+    }
+    try {
+        // رفض الدخول إذا كان البريد غير مفعّل
+        if (!user.emailVerified) {
+            alert('يرجى تفعيل بريدك الإلكتروني أولاً.\nتم إرسال رابط التفعيل إلى بريدك.\nإذا لم تجد الرسالة في البريد الوارد، افحص مجلد الرسائل غير المرغوب فيها (Spam).');
+            await user.sendEmailVerification();
+            showLogin();
+            return;
+        }
+
+        const doc = await db.collection('users').doc(user.uid).get();
+        if (doc.exists) {
+            currentUser = doc.data();
+            currentUser.uid = user.uid;
+
+            // التأكد من وجود trialStartDate
+            if (!currentUser.trialStartDate) {
+                await db.collection('users').doc(user.uid).update({
+                    trialStartDate: firebase.firestore.FieldValue.serverTimestamp(),
+                    subscriptionStatus: 'trial'
+                });
+                currentUser.trialStartDate = new Date();
+            }
+
+            let trialStart = currentUser.trialStartDate.toDate ? currentUser.trialStartDate.toDate() : new Date(currentUser.trialStartDate.seconds * 1000 || Date.now());
+            const trialEnd = trialStart.getTime() + 7 * 24 * 60 * 60 * 1000;
+            const now = Date.now();
+
+            const _st = currentUser.subscriptionStatus || 'trial';
+            let _valid = false;
+            if (_st === 'active') {
+                const _e = currentUser.subscriptionEndDate;
+                const _em = _e ? (_e.toDate ? _e.toDate().getTime() : (_e.seconds ? _e.seconds * 1000 : new Date(_e).getTime())) : 0;
+                _valid = _em > now;
+            } else if (_st === 'trial') {
+                _valid = now < trialEnd;
+            }
+            if (_valid) {
+                await loadAllDataFromFirestore();
+                listenToUserData();
+    // مزامنة البيانات المحلية بعد التحقق من الجلسة
+    if (typeof syncLocalData === 'function') {
+        setTimeout(() => syncLocalData(), 2000);
+    }
+    checkPinOnLoad();
+    checkAdminAccess();
+    if (typeof showExpiryReminder === 'function') setTimeout(showExpiryReminder, 1500);
+    // ربط المستخدم بـ OneSignal
+    if (window.OneSignalDeferred) {
+        OneSignalDeferred.push(function(OneSignal) {
+            // 🚫 OneSignal SDK لا يدعم setExternalUserId — مُعطَّل مؤقتاً
+            // OneSignal.setExternalUserId(auth.currentUser.uid);
+        });
+    }
+            } else {
+                showSubscriptionScreen();
+            }
+        } else {
+            // إنشاء بيانات مستخدم جديدة تلقائيًا
+            await db.collection('users').doc(user.uid).set({
+                trialStartDate: firebase.firestore.FieldValue.serverTimestamp(),
+                subscriptionStatus: 'trial',
+                displayCurrency: 'SYP',
+                businessName: '',
+                ownerSignature: ''
+            });
+            localStorage.setItem('trialStart_' + user.uid, Date.now().toString());
+            const _tc = localStorage.getItem('trialStart_' + user.uid); currentUser = { uid: user.uid, subscriptionStatus: 'trial', trialStartDate: _tc ? new Date(parseInt(_tc)) : new Date() };
+            await loadAllDataFromFirestore();
+            checkPinOnLoad();
+        }
+    } catch (error) {
+        console.error('Error in checkSubscriptionAndShowApp:', error);
+        // حتى لو حصل خطأ، نعرض التطبيق للمستخدم
+        const _tc = localStorage.getItem('trialStart_' + user.uid); currentUser = { uid: user.uid, subscriptionStatus: 'trial', trialStartDate: _tc ? new Date(parseInt(_tc)) : new Date() };
+        try { await loadAllDataFromFirestore(); } catch(e) {}
+        checkPinOnLoad();
+    }
+}
+
+// ==================== فحص رمز PIN عند الدخول ====================
+function checkPinOnLoad() {
+    document.getElementById('authSection').style.display = 'none';
+    document.getElementById('registerSection').style.display = 'none';
+    document.getElementById('subscriptionSection').style.display = 'none';
+    document.getElementById('mainContainer').style.display = 'block';
+
+    if (settings.pin) {
+        showModal('أدخل رمز PIN للدخول', function(input) {
+            if (input === settings.pin) {
+                hideModal();
+                openPage('analytics');
+                updateAllTables();
+            } else {
+                alert('رمز PIN غير صحيح');
+                checkPinOnLoad();
+            }
+        }, true);
+        // إخفاء الصفحات حتى إدخال الرمز الصحيح
+        document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+    } else {
+        openPage('analytics');
+        updateAllTables();
+    }
+}
+
+// استعادة كلمة المرور
+async function resetPassword() {
+    const email = document.getElementById('authEmail').value.trim();
+    if (!email) {
+        alert('يرجى إدخال بريدك الإلكتروني أولاً');
+        return;
+    }
+    try {
+        await auth.sendPasswordResetEmail(email);
+        alert('تم إرسال رابط استعادة كلمة المرور إلى بريدك الإلكتروني');
+    } catch (error) {
+        alert(getArabicError(error));
+    }
+}
+
+
+// فحص المدير وإظهار أزرار الإدارة
+function checkAdminAccess() {
+    const user = auth.currentUser;
+    if (user && user.email && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+        const adminNavBtn = document.getElementById('adminNavBtn');
+        const adminDropBtn = document.getElementById('adminDropBtn');
+        const adminNotifBtn = document.getElementById('adminNotifBtn');
+        if (adminNavBtn) adminNavBtn.style.display = 'block';
+        if (adminDropBtn) adminDropBtn.style.display = 'block';
+        if (adminNotifBtn) adminNotifBtn.style.display = 'block';
+        console.log('تم تفعيل وضع المدير');
+    } else {
+        console.log('المستخدم ليس مديراً:', user ? user.email : 'لا يوجد');
+    }
+}
+
+
+// فحص الجلسة تلقائياً عند فتح التطبيق
+// ===== ALMUDIR: Auth Restoration v4 (Fast) =====
+(async () => {
+    const t0 = performance.now();
+    console.log('🔐 [Auth] بدء استعادة الجلسة');
+
+    // اضبط Persistence
+    try {
+        if (auth && auth.setPersistence && firebase.auth.Auth.Persistence) {
+            await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+        }
+    } catch (e) { console.warn('setPersistence:', e); }
+
+    let resolved = false;
+    let debounceTimer = null;
+
+    const commitAuth = async () => {
+        if (resolved) return;
+        resolved = true;
+        const elapsed = Math.round(performance.now() - t0);
+        console.log('⏱️ [Auth] حُسم بعد', elapsed, 'ms');
+
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+            showLogin();
+            hideLoading();
+            return;
+        }
+
+        console.log('✅ [Auth] مستخدم:', currentUser.email);
+
+        // ⚡ اعرض التطبيق فوراً — لا تنتظر Firestore
+        const mainApp = document.getElementById('mainApp');
+        const loginScreen = document.getElementById('loginScreen');
+        const authSection = document.getElementById('authSection');
+        if (mainApp) mainApp.style.display = 'block';
+        if (loginScreen) loginScreen.style.display = 'none';
+        if (authSection) authSection.style.display = 'none';
+        hideLoading();
+
+        // ثم افحص الاشتراك في الخلفية (بدون حجب الواجهة)
+        try {
+            await checkSubscriptionAndShowApp();
+            console.log('✅ [Auth] الاشتراك سليم بعد',
+                Math.round(performance.now() - t0), 'ms');
+        } catch (error) {
+            console.warn('⚠️ [Auth] خطأ الاشتراك:', error);
+            // لا نُخرج المستخدم — هو مسجّل دخول بالفعل
+        }
+        // ✨ إزالة حالة التحميل بعد الجاهزية
+        document.body.classList.remove('loading');
+
+    };
+
+    // 🚀 إذا كان currentUser متاحاً فوراً → لا تنتظر
+    if (auth.currentUser) {
+        console.log('⚡ [Auth] currentUser فوري');
+        commitAuth();
+        return;
+    }
+
+    // وإلا — debounce قصير جداً
+    auth.onAuthStateChanged((user) => {
+        if (debounceTimer) clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(commitAuth, 350);
+    });
+
+    // شبكة الأمان: بعد 2.5 ثانية، اعرض على أي حال
+    setTimeout(() => {
+        if (!resolved) {
+            console.warn('⏰ [Auth] Timeout — عرض احتياطي');
+            commitAuth();
+        }
+    }, 2500);
+})();
+// ===== END =====
+
+
+
+function hideLoading() {
+    const loading = document.getElementById('loadingScreen');
+    if (loading) loading.style.display = 'none';
+}
+function showLoading() {
+    const loading = document.getElementById('loadingScreen');
+    if (loading) loading.style.display = 'flex';
+}
+
+
+// ============================================================
+//  ✨ ALMUDIR — Sidebar Header Loader
+// ============================================================
+function updateSidebarHeader() {
+    document.body.classList.remove('loading');
+    const user = auth.currentUser;
+    if (!user) return;
+
+    // 1) البريد
+    const emailEl = document.getElementById('sidebarEmail');
+    if (emailEl) emailEl.textContent = user.email || '—';
+
+    // 2) الاسم + البريد من Firestore
+    const nameEl    = document.getElementById('sidebarName');
+    const busEl     = document.getElementById('sidebarBusiness');
+    const avatarEl  = document.getElementById('sidebarAvatar');
+    const statusEl  = document.getElementById('sidebarStatus');
+    const dotEl     = document.getElementById('sidebarStatusDot');
+    const textEl    = document.getElementById('sidebarStatusText');
+
+    // اسم المحل من الإعدادات
+    const bizName = (typeof settings !== 'undefined' && settings.businessName)
+        ? settings.businessName : 'نشاطي التجاري';
+
+    if (busEl) busEl.textContent = bizName;
+
+    // أول حرف من اسم المحل كصورة رمزية
+    if (avatarEl) {
+        const firstChar = (bizName || 'م').trim().charAt(0);
+        avatarEl.textContent = firstChar;
+    }
+
+    // من Firestore — إذا currentUser يحمل البيانات
+    if (typeof currentUser !== 'undefined' && currentUser && currentUser.fullName) {
+        if (nameEl) nameEl.textContent = currentUser.fullName;
+        if (avatarEl) avatarEl.textContent = currentUser.fullName.trim().charAt(0);
+    } else {
+        if (nameEl) nameEl.textContent = '—';
+    }
+
+    // ✨ الموقع من Firestore
+    try {
+        const locEl = document.getElementById('sidebarLocation');
+        const locTxtEl = document.getElementById('sidebarLocationText');
+        if (typeof currentUser !== 'undefined' && currentUser && currentUser.location) {
+            const loc = currentUser.location;
+            const parts = [loc.governorate, loc.town].filter(Boolean);
+            if (parts.length > 0 && locTxtEl && locEl) {
+                locTxtEl.textContent = parts.join(' - ');
+                locEl.style.display = 'flex';
+            }
+        }
+    } catch (e) { console.warn('[sidebar] location:', e); }
+
+    // 3) حالة الاشتراك
+    try {
+        const now = new Date();
+        let status = 'unknown';
+        let label = '—';
+
+        const subStatus = currentUser ? currentUser.subscriptionStatus : null;
+        const trialStart = currentUser && currentUser.trialStartDate
+            ? (currentUser.trialStartDate.toDate ? currentUser.trialStartDate.toDate() : new Date(currentUser.trialStartDate))
+            : null;
+
+        if (subStatus === 'active') {
+            status = 'green';
+            const end = currentUser.subscriptionEndDate
+                ? (currentUser.subscriptionEndDate.toDate ? currentUser.subscriptionEndDate.toDate() : new Date(currentUser.subscriptionEndDate))
+                : null;
+            label = end ? 'اشتراك نشط حتى ' + (typeof formatDate === 'function' ? formatDate(end) : end.toLocaleDateString('ar-EG')) : 'اشتراك نشط';
+        } else if (subStatus === 'trial' && trialStart) {
+            const diffDays = Math.floor((now - trialStart) / (1000 * 60 * 60 * 24));
+            const remain = 7 - diffDays;
+            if (remain > 0) {
+                status = 'yellow';
+                label = 'تجريبي — ' + remain + ' يوم متبقٍ';
+            } else {
+                status = 'red';
+                label = 'انتهت الفترة التجريبية';
+            }
+        } else {
+            status = 'yellow';
+            label = 'غير محدد';
+        }
+
+        if (dotEl) { dotEl.className = 'status-dot ' + status; }
+        if (textEl) { textEl.textContent = label; }
+    } catch (e) {
+        console.warn('[updateSidebarHeader] status:', e);
+    }
+}
+// END Sidebar Header Loader
+
+/* ============================================================
+   ✨ ALMUDIR: Unified Floating Buttons Controller
+   يتحكم في زر القائمة + زر AI
+   يحترم: loading + qr-open
+   ============================================================ */
+(function() {
+    function updateButtons() {
+        var body = document.body;
+        var user = (typeof auth !== 'undefined' && auth.currentUser);
+
+        // 🚫 حالة الإخفاء — تحميل أو قارئ باركود
+        var shouldHide = body.classList.contains('loading')
+                      || body.classList.contains('login-screen') 
+                      || body.classList.contains('qr-open');
+
+        var menu = document.getElementById('mainMenuBtn');
+        var ai = document.getElementById('aiChatBtn');
+
+        if (shouldHide || !user) {
+            // أخفِ الزرين
+            if (menu) menu.style.display = 'none';
+            if (ai) ai.style.display = 'none';
+        } else {
+            // أظهر الزرين
+            if (menu) menu.style.display = 'block';
+            if (ai) ai.style.display = 'flex';
+        }
+    }
+
+    // تشغيل فوري
+    updateButtons();
+
+    // كل 800ms — توازن بين الاستجابة والسرعة
+    setInterval(updateButtons, 800);
+
+    // عند أي تغيير في الـ class
+    var observer = new MutationObserver(updateButtons);
+    observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+})();
+/* END Unified Controller */
+
+// ============================================================
+//  ✨ Auto Wizard — عرض قالب النشاط بعد الدخول
+// ============================================================
+(function() {
+    if (typeof auth === 'undefined' || !auth) {
+        console.warn('[autoWizard] auth غير معرّف');
+        return;
+    }
+
+    let _wizardShown = false;
+
+    auth.onAuthStateChanged(function(user) {
+        if (!user || _wizardShown) return;
+
+        // انتظر تحميل البيانات
+        setTimeout(function() {
+            // التأكد من الجاهزية
+            if (typeof currentUser === 'undefined' || !currentUser) {
+                console.log('[autoWizard] currentUser غير جاهز');
+                return;
+            }
+            if (typeof showActivityWelcome !== 'function') {
+                console.log('[autoWizard] showActivityWelcome غير معرّفة');
+                return;
+            }
+
+            // تحقق من عدم الإنجاز
+            if (currentUser.wizardCompleted) {
+                console.log('[autoWizard] مُنجز مسبقاً (Firestore)');
+                return;
+            }
+            if (localStorage.getItem('wizard_' + user.uid)) {
+                console.log('[autoWizard] مُنجز مسبقاً (localStorage)');
+                return;
+            }
+
+            console.log('[autoWizard] 🎯 محاولة عرض القالب...');
+
+            _wizardShown = true;
+
+            Promise.resolve(showActivityWelcome())
+                .catch(function(e) {
+                    console.warn('[autoWizard] فشل:', e);
+                });
+        }, 4000); // انتظر 4 ثواني (بيانات + قوالب)
+    });
+
+    console.log('🎯 [autoWizard] جاهز');
+})();
+
+
+// ============================================================
+//  ✨ استخراج كود الدولة من النموذج
+// ============================================================
+function getSelectedCountryPhonePrefix() {
+    const sel = document.getElementById('regCountry');
+    return sel ? sel.value : '+963';
+}
+
+function getSelectedCountryCode() {
+    const prefix = getSelectedCountryPhonePrefix();
+    if (typeof COUNTRIES !== 'undefined' && COUNTRIES[prefix]) {
+        return COUNTRIES[prefix].code;
+    }
+    return 'SY';
+}
