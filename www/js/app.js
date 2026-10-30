@@ -5151,186 +5151,17 @@ async function sendAIMessage() {
 let materialQrScanner = null;
 
 async function startMaterialQRScanner() {
-    alert('🔍 فحص إضافة مادة: حالة ML Kit هي: ' + typeof window.scanBarcodeNative);
-    // ===== 🚀 ML Kit Native (APK) =====
     if (typeof window.scanBarcodeNative === 'function') {
         try {
-            const result = await window.scanBarcodeNative({
-                formats: ['EAN_13', 'EAN_8', 'CODE_128', 'ITF', 'QR_CODE']
-            });
+            const result = await window.scanBarcodeNative({ formats: ['EAN_13', 'EAN_8', 'CODE_128', 'ITF', 'QR_CODE'] });
             if (result.ok && result.barcodes && result.barcodes.length > 0) {
                 await handleMaterialQR(result.barcodes[0].rawValue);
             }
         } catch(e) {
-            console.warn('❌ [mat-scan] native:', e);
+            alert('🚨 خطأ في ML Kit: ' + e.message);
         }
-        return;
-    }
-    // ===== ML Kit القديم (احتياطي) =====
-    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.BarcodeScanner) {
-        try {
-            const { BarcodeScanner } = window.Capacitor.Plugins;
-            const perm = await BarcodeScanner.requestPermissions();
-            if (perm.camera !== 'granted' && perm.camera !== 'limited') {
-                alert('يجب منح صلاحية الكاميرا للمسح');
-                return;
-            }
-            if (!(await almudirEnsureMlKit())) return;
-            const result = await BarcodeScanner.startScan();
-            if (result.barcodes && result.barcodes.length > 0) {
-                await handleMaterialQR(result.barcodes[0].rawValue);
-            }
-        } catch (e) {
-            console.warn('MLKit error:', e);
-            alert('خطأ أثناء المسح: ' + (e.message || e));
-        }
-        return;
-    }
-    // ===== كود الويب الأصلي =====
-    const reader = document.getElementById('matQRReader');
-    if (!reader) {
-        alert('حاوية الكاميرا غير موجودة');
-        return;
-    }
-    if (typeof Html5Qrcode === 'undefined') {
-        alert('مكتبة قراءة QR غير محملة. تأكد من تحميل الصفحة كاملة.');
-        return;
-    }
-
-    reader.style.display = 'block';
-    if (materialQrScanner) {
-        try { await materialQrScanner.clear(); } catch(e) {}
-    }
-
-    try {
-        const cameras = await Html5Qrcode.getCameras();
-        if (!cameras || cameras.length === 0) {
-            alert('لا توجد كاميرا متاحة على هذا الجهاز');
-            reader.style.display = 'none';
-            return;
-        }
-
-        let cameraId = cameras[0].id;
-        const backCam = cameras.find(c => /back|rear|environment/i.test(c.label));
-        if (backCam) cameraId = backCam.id;
-
-        const _bcFormats = [
-            Html5QrcodeSupportedFormats.QR_CODE,
-            Html5QrcodeSupportedFormats.EAN_13,
-            Html5QrcodeSupportedFormats.EAN_8,
-            Html5QrcodeSupportedFormats.UPC_A,
-            Html5QrcodeSupportedFormats.UPC_E,
-            Html5QrcodeSupportedFormats.CODE_128,
-            Html5QrcodeSupportedFormats.CODE_39,
-            Html5QrcodeSupportedFormats.ITF
-        ];
-        materialQrScanner = new Html5Qrcode('matQRReader', {
-            formatsToSupport: _bcFormats,
-            experimentalFeatures: { useBarCodeDetectorIfSupported: true }
-        });
-        await materialQrScanner.start(
-            cameraId,
-            { fps: 25, qrbox: { width: 300, height: 180 } },
-            (decodedText) => handleMaterialQR(decodedText),
-            () => {}
-        );
-    } catch (err) {
-        console.error('QR Error:', err);
-        reader.style.display = 'none';
-        const msg = err && err.message ? err.message : (err && err.name ? err.name : 'خطأ غير معروف');
-        if (String(msg).includes('Permission') || String(msg).includes('NotAllowed')) {
-            alert('إذن الكاميرا مرفوض. اذهب لإعدادات المتصفح → أذونات الموقع → الكاميرا → السماح.');
-        } else {
-            alert('تعذر فتح الكاميرا: ' + msg);
-        }
-    }
-}
-
-async function handleMaterialQR(barcode) {
-    await stopMaterialQRScanner();
-    const barcodeField = document.getElementById('matBarcode');
-    if (barcodeField) barcodeField.value = barcode;
-
-    // ========== 1) البحث في المواد المحلية ==========
-    const _bc = String(barcode || '').trim();
-    const local = materials.find(m => String(m.barcode || '').trim() === _bc);
-    if (local) {
-        alert('المادة موجودة مسبقاً: ' + local.name + '\nسيتم فتح بياناتها للتعديل.');
-        editMaterial(local.id);
-        return;
-    }
-
-    // ========== 2) ✨ البحث في قاعدة الباركود العامة ==========
-    if (typeof publicdb !== 'undefined' && publicdb.lookup) {
-        try {
-            const found = await publicdb.lookup(barcode);
-            if (found && found.name) {
-                // ملء الحقول تلقائياً
-                const nameField = document.getElementById('matName');
-                const typeField = document.getElementById('matType');
-                const unitField = document.getElementById('matUnit');
-
-                if (nameField) nameField.value = found.name;
-                if (typeField && found.type) typeField.value = found.type;
-                if (unitField && found.unit) unitField.value = found.unit;
-
-                // حساب السعر المقترح (SYP) — يعمل من مساهم واحد
-                let priceMsg = '';
-                const sug = publicdb.suggestPrice(found.priceHistory, 'SYP');
-                if (sug) {
-                    const saleField = document.getElementById('matSaleSYP');
-                    if (saleField && !saleField.value) {
-                        saleField.value = sug.value;
-                        saleField.style.background = '#fffbea';
-                        saleField.title = sug.label + ' (من ' + sug.count + ' مساهم)';
-                    }
-                    const word = sug.count === 1 ? 'مساهم' : 'مساهمين';
-                    priceMsg = '\n\n💰 ' + sug.label + ': ' + sug.value + ' ل.س' +
-                              '\n   (من ' + sug.count + ' ' + word + ')';
-                    if (sug.showRange && sug.min !== sug.max) {
-                        priceMsg += '\n   النطاق: ' + sug.min + ' - ' + sug.max + ' ل.س';
-                    }
-                }
-
-                alert('✨ منتج معروف!' +
-                      '\n\nالاسم: ' + found.name +
-                      (found.type ? '\nالنوع: ' + found.type : '') +
-                      (found.unit ? '\nالوحدة: ' + found.unit : '') +
-                      priceMsg +
-                      '\n\nأكمل الكمية والسعر ثم احفظ.');
-
-                // ركّز على حقل الكمية
-                const stockField = document.getElementById('matStock');
-                if (stockField) stockField.focus();
-                return;
-            }
-        } catch (e) {
-            console.warn('[handleMaterialQR] publicdb lookup failed:', e);
-        }
-    }
-
-    // ========== 3) احتياطي: Open Food Facts ==========
-    try {
-        const res = await fetch('https://world.openfoodfacts.org/api/v0/product/' + barcode + '.json');
-        const data = await res.json();
-        if (data.status === 1 && data.product) {
-            const p = data.product;
-            const name = p.product_name_ar || p.product_name || '';
-            if (name) {
-                const nameField = document.getElementById('matName');
-                if (nameField) nameField.value = name;
-            }
-            if (p.brands) {
-                const typeField = document.getElementById('matType');
-                if (typeField) typeField.value = p.brands;
-            }
-            alert('🌐 تم جلب بيانات من Open Food Facts:\n' + name + '\n\nيرجى إكمال السعر والكمية.');
-        } else {
-            alert('📷 لم يُعثر على المنتج في أي قاعدة بيانات.\nيرجى إدخال البيانات يدوياً.');
-        }
-    } catch (e) {
-        console.warn('تعذر جلب بيانات المنتج:', e);
-        alert('📷 لم يُعثر على المنتج. أدخل البيانات يدوياً.');
+    } else {
+        alert('⚠️ ماسح ML Kit غير متاح. يرجى استخدام تطبيق الأندرويد.');
     }
 }
 
@@ -5349,107 +5180,19 @@ async function stopMaterialQRScanner() {
 // ==================== البيع بالباركود ====================
 async function startSaleQRScanner() {
     document.body.classList.add('qr-open');
-    
-    // 🔍 تنبيه تشخيصي
-    alert('🔍 فحص البيع: حالة ML Kit هي: ' + typeof window.scanBarcodeNative);
-    
-    // ===== 🚀 ML Kit Native (APK) =====
     if (typeof window.scanBarcodeNative === 'function') {
         try {
-            const result = await window.scanBarcodeNative({
-                formats: ['EAN_13', 'EAN_8', 'CODE_128', 'ITF', 'QR_CODE']
-            });
+            const result = await window.scanBarcodeNative({ formats: ['EAN_13', 'EAN_8', 'CODE_128', 'ITF', 'QR_CODE'] });
             if (result.ok && result.barcodes && result.barcodes.length > 0) {
                 handleSaleQR(result.barcodes[0].rawValue);
-            } else {
-                alert('لم يتم العثور على باركود.');
             }
         } catch(e) {
-            alert('❌ خطأ في الكاميرا: ' + e.message);
-            console.warn('❌ [sale-scan] native:', e);
+            alert('🚨 خطأ في ML Kit: ' + e.message);
         }
-        return;
+    } else {
+        alert('⚠️ ماسح ML Kit غير متاح. يرجى استخدام تطبيق الأندرويد.');
     }
-    // ===== ML Kit القديم (احتياطي) =====
-    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.BarcodeScanner) {
-        try {
-            const { BarcodeScanner } = window.Capacitor.Plugins;
-            const perm = await BarcodeScanner.requestPermissions();
-            if (perm.camera !== 'granted' && perm.camera !== 'limited') {
-                alert('يجب منح صلاحية الكاميرا للمسح');
-                return;
-            }
-            const result = await BarcodeScanner.startScan();
-            if (result.barcodes && result.barcodes.length > 0) {
-                handleSaleQR(result.barcodes[0].rawValue);
-            }
-        } catch (e) {
-            console.warn('MLKit error:', e);
-        }
-        return;
-    }
-
-    // ===== Fallback: html5-qrcode داخل التطبيق =====
-    if (typeof Html5Qrcode === 'undefined') {
-        alert('مكتبة المسح غير محملة');
-        return;
-    }
-
-    const overlayId = 'sale-scan-overlay-' + Date.now();
-    const readerId = 'sale-scan-reader-' + Date.now();
-    const overlay = document.createElement('div');
-    overlay.id = overlayId;
-    overlay.style.cssText = 'position:fixed;inset:0;background:#000;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;';
-    overlay.innerHTML =
-        '<div style="color:white;font-size:18px;margin-bottom:20px;">جاري فتح الكاميرا...</div>' +
-        '<div id="' + readerId + '" style="width:80%;max-width:400px;"></div>' +
-        '<button id="' + overlayId + '-close" style="margin-top:20px;padding:10px 25px;background:#c0392b;color:white;border:none;border-radius:8px;font-size:16px;cursor:pointer;">إلغاء</button>';
-    document.body.appendChild(overlay);
-
-    const cleanup = () => {
-        try { overlay.remove(); } catch(e) {}
-        window._saleScanner = null;
-    };
-
-    document.getElementById(overlayId + '-close').onclick = () => {
-        document.body.classList.remove('qr-open');
-        if (window._saleScanner) {
-            try { window._saleScanner.stop().then(cleanup).catch(cleanup); } catch(e) { cleanup(); }
-        } else {
-            cleanup();
-        }
-    };
-
-    try {
-        const _bcSaleFormats = [
-            Html5QrcodeSupportedFormats.QR_CODE,
-            Html5QrcodeSupportedFormats.EAN_13,
-            Html5QrcodeSupportedFormats.EAN_8,
-            Html5QrcodeSupportedFormats.UPC_A,
-            Html5QrcodeSupportedFormats.UPC_E,
-            Html5QrcodeSupportedFormats.CODE_128,
-            Html5QrcodeSupportedFormats.CODE_39,
-            Html5QrcodeSupportedFormats.ITF
-        ];
-        const scanner = new Html5Qrcode(readerId, {
-            formatsToSupport: _bcSaleFormats,
-            experimentalFeatures: { useBarCodeDetectorIfSupported: true }
-        });
-        window._saleScanner = scanner;
-        await scanner.start(
-            { facingMode: 'environment' },
-            { fps: 25, qrbox: { width: 300, height: 180 } },
-            (decodedText) => {
-                scanner.stop().then(() => cleanup()).catch(() => cleanup());
-                handleSaleQR(decodedText);
-            },
-            () => {}
-        );
-    } catch (err) {
-        console.error('Sale scanner error:', err);
-        alert('تعذر فتح الكاميرا: ' + (err.message || err));
-        cleanup();
-    }
+    document.body.classList.remove('qr-open');
 }
 
 function handleSaleQR(barcode) {
