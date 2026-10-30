@@ -5151,6 +5151,7 @@ async function sendAIMessage() {
 let materialQrScanner = null;
 
 async function startMaterialQRScanner() {
+    alert('🔍 فحص إضافة مادة: حالة ML Kit هي: ' + typeof window.scanBarcodeNative);
     // ===== 🚀 ML Kit Native (APK) =====
     if (typeof window.scanBarcodeNative === 'function') {
         try {
@@ -5348,11 +5349,10 @@ async function stopMaterialQRScanner() {
 // ==================== البيع بالباركود ====================
 async function startSaleQRScanner() {
     document.body.classList.add('qr-open');
-    if (typeof window.scanBarcodeNative === 'function') {
-        alert('✅ تم العثور على ML Kit! جاري فتح الكاميرا...');
-    } else {
-        alert('❌ لم يتم العثور على ML Kit! scanBarcodeNative غير موجود. سنستخدم الواجهة القديمة.');
-    }
+    
+    // 🔍 تنبيه تشخيصي
+    alert('🔍 فحص البيع: حالة ML Kit هي: ' + typeof window.scanBarcodeNative);
+    
     // ===== 🚀 ML Kit Native (APK) =====
     if (typeof window.scanBarcodeNative === 'function') {
         try {
@@ -5361,8 +5361,11 @@ async function startSaleQRScanner() {
             });
             if (result.ok && result.barcodes && result.barcodes.length > 0) {
                 handleSaleQR(result.barcodes[0].rawValue);
+            } else {
+                alert('لم يتم العثور على باركود.');
             }
         } catch(e) {
+            alert('❌ خطأ في الكاميرا: ' + e.message);
             console.warn('❌ [sale-scan] native:', e);
         }
         return;
