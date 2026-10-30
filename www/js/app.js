@@ -5348,6 +5348,11 @@ async function stopMaterialQRScanner() {
 // ==================== البيع بالباركود ====================
 async function startSaleQRScanner() {
     document.body.classList.add('qr-open');
+    if (typeof window.scanBarcodeNative === 'function') {
+        alert('✅ تم العثور على ML Kit! جاري فتح الكاميرا...');
+    } else {
+        alert('❌ لم يتم العثور على ML Kit! scanBarcodeNative غير موجود. سنستخدم الواجهة القديمة.');
+    }
     // ===== 🚀 ML Kit Native (APK) =====
     if (typeof window.scanBarcodeNative === 'function') {
         try {
