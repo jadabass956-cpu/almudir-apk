@@ -12,12 +12,22 @@
         try { BarcodeScanner = Cap.registerPlugin('BarcodeScanner'); } catch(e) {}
     }
 
-    if (BarcodeScanner && typeof BarcodeScanner.scan === 'function') {
+    if (BarcodeScanner) {
         window.BarcodeScanner = BarcodeScanner;
         
         window.scanBarcodeNative = async function(options) {
             try {
-                // 1. طلب إذن الكاميرا
+                // 1. التحقق من وجود وحدة جوجل وتحميلها إذا لزم الأمر
+                if (typeof BarcodeScanner.isGoogleBarcodeScannerModuleAvailable === 'function') {
+                    const { available } = await BarcodeScanner.isGoogleBarcodeScannerModuleAvailable();
+                    if (!available) {
+                        alert('⏳ جاري تحميل وحدة مسح الباركود من Google Play. يرجى الانتظار...');
+                        await BarcodeScanner.installGoogleBarcodeScannerModule();
+                        alert('✅ تم تحميل الوحدة بنجاح! جاري فتح الكاميرا...');
+                    }
+                }
+
+                // 2. طلب إذن الكاميرا
                 if (typeof BarcodeScanner.checkPermissions === 'function') {
                     const perm = await BarcodeScanner.checkPermissions();
                     if (perm.camera !== 'granted') {
@@ -29,17 +39,10 @@
                     }
                 }
 
-                // 2. استدعاء scan مباشرة بدون تحميل أي وحدات
-                const scanPromise = BarcodeScanner.scan({
+                // 3. فتح الكاميرا
+                const result = await BarcodeScanner.scan({
                     formats: options.formats || ['EAN_13', 'EAN_8', 'CODE_128', 'ITF', 'QR_CODE']
                 });
-
-                // 3. مؤقت 15 ثانية لمنع التعليق
-                const timeoutPromise = new Promise((_, reject) => 
-                    setTimeout(() => reject(new Error('انتهت مهلة فتح الكاميرا. قد تحتاج لتحديث تطبيق خدمات Google Play.')), 15000)
-                );
-
-                const result = await Promise.race([scanPromise, timeoutPromise]);
 
                 if (result && result.barcodes && result.barcodes.length > 0) {
                     return { ok: true, barcodes: result.barcodes };
@@ -51,8 +54,6 @@
                 return { ok: false, reason: e.message };
             }
         };
-        console.log('✅ [native-scanner] ML Kit scan جاهز');
-    } else {
-        alert('⚠️ البلوجن لا يدعم scan أو غير مسجل');
+        console.log('✅ [native-scanner] ML Kit جاهز');
     }
 })();
