@@ -1,5 +1,5 @@
 {
-  "appId": "com.jasoft.almudir",
+  "appId": "com.jasoft.almudir.v2",
   "appName": "المدير AI",
   "webDir": "www",
   "bundledWebRuntime": false,
@@ -11,12 +11,22 @@
   "server": {
     "androidScheme": "https",
     "cleartext": false,
-    "allowNavigation": ["*.web.app", "*.googleapis.com", "*.firebaseio.com"]
+    "allowNavigation": [
+      "*.web.app",
+      "*.googleapis.com",
+      "*.firebaseio.com"
+    ]
   },
   "plugins": {
-    "CapacitorHttp": { "enabled": true },
+    "CapacitorHttp": {
+      "enabled": true
+    },
     "PushNotifications": {
-      "presentationOptions": ["badge", "sound", "alert"]
+      "presentationOptions": [
+        "badge",
+        "sound",
+        "alert"
+      ]
     }
   }
 }
