@@ -11,28 +11,25 @@
 
         window.scanBarcodeNative = async function(options) {
             try {
-                // 1. طلب الإذن
+                // 1. طلب إذن الكاميرا
                 const status = await BarcodeScanner.checkPermission({ force: true });
                 if (status.denied) {
                     alert('🚨 يرجى السماح للتطبيق بالوصول للكاميرا من إعدادات الهاتف.');
                     return { ok: false, reason: 'permission_denied' };
                 }
 
-                // 2. تجهيز الشاشة للكاميرا
+                // 2. إخفاء خلفية الويب لتظهر الكاميرا
+                BarcodeScanner.hideBackground();
                 document.body.classList.add('scanner-active');
                 document.body.style.backgroundColor = 'transparent';
-                
-                // إخفاء الواجهة (اختياري - لجعل الكاميرا واضحة)
-                const appRoot = document.querySelector('#app') || document.body;
-                appRoot.style.visibility = 'hidden';
 
-                // 3. تشغيل الماسح
+                // 3. بدء المسح
                 const result = await BarcodeScanner.startScan();
 
-                // 4. إعادة الواجهة بعد الانتهاء
+                // 4. استعادة الواجهة
+                BarcodeScanner.showBackground();
                 document.body.classList.remove('scanner-active');
                 document.body.style.backgroundColor = '';
-                appRoot.style.visibility = 'visible';
 
                 if (result.hasContent) {
                     return { ok: true, barcodes: [{ rawValue: result.content }] };
@@ -40,6 +37,7 @@
                 return { ok: false, reason: 'no_barcode' };
 
             } catch(e) {
+                BarcodeScanner.showBackground();
                 document.body.classList.remove('scanner-active');
                 document.body.style.backgroundColor = '';
                 alert('🚨 خطأ في الماسح:\n' + e.message);

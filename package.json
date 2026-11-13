@@ -1,6 +1,6 @@
 {
   "name": "almudir-ai",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "description": "المدير AI — نظام محاسبة ذكي",
   "private": true,
   "dependencies": {
@@ -12,7 +12,7 @@
     "@capacitor/preferences": "^6.0.2",
     "@capacitor/filesystem": "^6.0.1",
     "@capacitor/share": "^6.0.2",
-    "@capacitor-community/barcode-scanner": "^4.0.1"
+    "spare-capacitor-barcode-scanner": "^6.0.1"
   },
   "devDependencies": {
     "@capacitor/cli": "^6.1.2"
