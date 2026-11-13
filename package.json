@@ -1,6 +1,6 @@
 {
   "name": "almudir-ai",
-  "version": "2.4.1",
+  "version": "2.4.2",
   "description": "المدير AI — نظام محاسبة ذكي",
   "private": true,
   "dependencies": {
