@@ -12,39 +12,28 @@
         window.scanBarcodeNative = async function(options) {
             try {
                 // 1. طلب إذن الكاميرا
-                const status = await BarcodeScanner.checkPermission({ force: true });
-                if (status.denied) {
+                const perm = await BarcodeScanner.requestPermissions();
+                if (perm.camera !== 'granted' && perm.camera !== 'limited') {
                     alert('🚨 يرجى السماح للتطبيق بالوصول للكاميرا من إعدادات الهاتف.');
                     return { ok: false, reason: 'permission_denied' };
                 }
 
-                // 2. إخفاء خلفية الويب لتظهر الكاميرا
-                BarcodeScanner.hideBackground();
-                document.body.classList.add('scanner-active');
-                document.body.style.backgroundColor = 'transparent';
+                // 2. بدء المسح
+                const result = await BarcodeScanner.scanBarcode({
+                    formats: options.formats || ['EAN_13', 'EAN_8', 'CODE_128', 'ITF', 'QR_CODE']
+                });
 
-                // 3. بدء المسح
-                const result = await BarcodeScanner.startScan();
-
-                // 4. استعادة الواجهة
-                BarcodeScanner.showBackground();
-                document.body.classList.remove('scanner-active');
-                document.body.style.backgroundColor = '';
-
-                if (result.hasContent) {
-                    return { ok: true, barcodes: [{ rawValue: result.content }] };
+                if (result && result.barcodes && result.barcodes.length > 0) {
+                    return { ok: true, barcodes: result.barcodes };
                 }
                 return { ok: false, reason: 'no_barcode' };
 
             } catch(e) {
-                BarcodeScanner.showBackground();
-                document.body.classList.remove('scanner-active');
-                document.body.style.backgroundColor = '';
                 alert('🚨 خطأ في الماسح:\n' + e.message);
                 return { ok: false, reason: e.message };
             }
         };
-        console.log('✅ [native-scanner] ZXing Scanner جاهز');
+        console.log('✅ [native-scanner] Capacitor Barcode Scanner جاهز');
     } else {
         console.warn('❌ [native-scanner] البلوجن غير موجود');
     }
