@@ -51,6 +51,16 @@ body.pin-locked #mainMenuBtn {
     visibility: hidden !important;
 }
 </style>
+
+<style>
+  body.scanner-active {
+    background: transparent !important;
+    visibility: hidden;
+  }
+  body.scanner-active .scanner-ui {
+    visibility: visible;
+  }
+</style>
 </head>
 <body class="loading pin-locked">
 <button id="aiChatBtn" onclick="openAIChat()" title="المساعد الذكي" style="position:fixed; bottom:24px; left:20px; width:62px; height:62px; background:linear-gradient(135deg, #0f172a 0%, #1e40af 60%, #3b82f6 100%); color:white; border:none; border-radius:50%; display:flex; align-items:center; justify-content:center; z-index:2147483647; cursor:pointer; padding:0; user-select:none; -webkit-tap-highlight-color:transparent;">

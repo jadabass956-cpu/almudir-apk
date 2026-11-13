@@ -57,20 +57,6 @@ jobs:
           echo "📋 MANIFEST AFTER:"
           head -40 "$MANIFEST"
 
-      - name: Register BarcodeScanner in MainActivity
-        run: |
-          MAIN_ACTIVITY="android/app/src/main/java/com/jasoft/almudir/MainActivity.java"
-          
-          echo "=== MAIN ACTIVITY PATH ==="
-          echo "$MAIN_ACTIVITY"
-          
-          echo ""
-          echo "=== BEFORE ==="
-          cat "$MAIN_ACTIVITY" 2>/dev/null || echo "❌ File not found"
-          
-          cat > "$MAIN_ACTIVITY" << 'JAVA_EOF'
-          package com.jasoft.almudir;
-
           import android.os.Bundle;
           import com.getcapacitor.BridgeActivity;
           import io.capawesome.capacitorjs.plugins.mlkit.barcodescanning.BarcodeScannerPlugin;
