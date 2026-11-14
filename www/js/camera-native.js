@@ -14,23 +14,32 @@
                 return;
             }
 
-            // 2. فتح الكاميرا (النشاط المنفصل)
-            alert('⏳ سيتم فتح الكاميرا...');
+            // 2. التحقق من وجود وحدة Google وتحميلها إذا لزم الأمر
+            if (typeof scanner.isGoogleBarcodeScannerModuleAvailable === 'function') {
+                const { available } = await scanner.isGoogleBarcodeScannerModuleAvailable();
+                if (!available) {
+                    alert('⏳ جاري تحميل وحدة المسح من Google Play... يرجى الانتظار (قد يستغرق دقيقة).');
+                    await scanner.installGoogleBarcodeScannerModule();
+                    alert('✅ تم تحميل الوحدة بنجاح! جاري فتح الكاميرا...');
+                }
+            }
+
+            // 3. فتح الكاميرا
             const result = await scanner.scan({
                 formats: ['EAN_13', 'EAN_8', 'CODE_128', 'ITF', 'QR_CODE']
             });
             
-            // 3. معالجة النتيجة
+            // 4. معالجة النتيجة
             if (result && result.barcodes && result.barcodes.length > 0) {
                 if (typeof handleSaleQR === 'function') handleSaleQR(result.barcodes[0].rawValue);
             }
         } catch(e) {
             if (e.message && !e.message.includes('cancel')) {
-                alert('❌ خطأ: ' + e.message);
+                alert('❌ خطأ: ' + e.message + '\n\nتأكد من اتصالك بالإنترنت ومن وجود تطبيق "خدمات Google Play" على هاتفك.');
             }
         }
     };
     
     window.startMaterialQRScanner = window.startSaleQRScanner;
-    console.log('✅ Native Camera Ready');
+    console.log('✅ Native Camera with Auto-Install Ready');
 })();
