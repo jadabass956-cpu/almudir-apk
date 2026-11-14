@@ -27,6 +27,11 @@
         "sound",
         "alert"
       ]
+    },
+    "BarcodeScanner": {
+      "android": {
+        "useBundledModel": true
+      }
     }
   }
 }
