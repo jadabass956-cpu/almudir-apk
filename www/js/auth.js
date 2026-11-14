@@ -746,21 +746,24 @@ async function _buildCurrentUserSafe(user, isNewUser) {
         const doc = await db.collection('users').doc(uid).get();
         if (doc.exists) {
             const data = doc.data();
+            // جلب trialStartDate إذا وجد
+            let t = null;
             if (data.trialStartDate) {
-                const t = data.trialStartDate.toDate ? data.trialStartDate.toDate()
-                                                    : new Date(data.trialStartDate);
-                console.log('🛡️ [auth] trialStart من Firestore');
+                t = data.trialStartDate.toDate ? data.trialStartDate.toDate()
+                                               : new Date(data.trialStartDate);
                 const ms = t.getTime();
                 localStorage.setItem('trialStart_' + uid, ms.toString());
                 if (typeof subMetaSet === 'function') subMetaSet(uid, 'trialStart', ms);
-                return {
-                    uid: uid,
-                    subscriptionStatus: data.subscriptionStatus || 'trial',
-                    subscriptionEndDate: data.subscriptionEndDate || null,
-                    trialStartDate: t,
-                    ...data
-                };
             }
+            
+            // إرجاع البيانات الحقيقية دائماً (سواء كان trial أو lifetime أو active)
+            return {
+                uid: uid,
+                subscriptionStatus: data.subscriptionStatus || 'trial',
+                subscriptionEndDate: data.subscriptionEndDate || null,
+                trialStartDate: t,
+                ...data
+            };
         }
     } catch(e) { console.warn('[auth] firestore read fail:', e.message); }
 
@@ -993,8 +996,19 @@ function updateSidebarHeader() {
     const textEl    = document.getElementById('sidebarStatusText');
 
     // اسم المحل من الإعدادات
-    const bizName = (typeof settings !== 'undefined' && settings.businessName)
-        ? settings.businessName : 'نشاطي التجاري';
+    // 1. البحث في currentUser (بيانات Firestore)
+    let bizName = '';
+    if (typeof currentUser !== 'undefined' && currentUser && currentUser.businessName) {
+        bizName = currentUser.businessName;
+    } 
+    // 2. إذا لم يوجد، البحث في settings (بيانات محلية)
+    else if (typeof settings !== 'undefined' && settings.businessName) {
+        bizName = settings.businessName;
+    } 
+    // 3. القيمة الافتراضية
+    else {
+        bizName = 'نشاطي التجاري';
+    }
 
     if (busEl) busEl.textContent = bizName;
 

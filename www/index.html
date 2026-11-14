@@ -4266,5 +4266,25 @@ body.pin-locked #mainMenuBtn {
     if (window.lucide) lucide.createIcons();
 </script>
 <script src="js/camera-native.js?v=999"></script>
+
+<script id="force-save-script">
+  // دالة إجبارية لحفظ البيانات في Firestore
+  async function forceSaveToCloud() {
+    if (typeof saveAllData === 'function') {
+      try {
+        await saveAllData();
+        console.log('✅ [ForceSave] تم رفع البيانات للسحابة');
+      } catch(e) {
+        console.error('❌ [ForceSave] فشل الرفع:', e.message);
+      }
+    }
+  }
+
+  // استدعاء الحفظ كل 10 ثوانٍ (للتأكد فقط)
+  setInterval(forceSaveToCloud, 10000);
+
+  // محاولة الحفظ عند إغلاق التطبيق أو تغيير الصفحة
+  window.addEventListener('beforeunload', forceSaveToCloud);
+</script>
 </body>
 </html>

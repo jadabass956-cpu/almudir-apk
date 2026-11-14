@@ -1,6 +1,27 @@
 (function() {
     'use strict';
     window.startSaleQRScanner = async function() {
+        // دالة تشغيل الصوت
+        const playSound = (type) => {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                if (type === 'success') {
+                    oscillator.frequency.value = 1200; // صوت عالي (نجاح)
+                    gainNode.gain.value = 0.5;
+                } else {
+                    oscillator.frequency.value = 400; // صوت منخفض (خطأ)
+                    gainNode.gain.value = 0.3;
+                }
+                oscillator.start();
+                setTimeout(() => oscillator.stop(), 150);
+            } catch(e) { console.log('Audio error:', e); }
+        };
+
         const Cap = window.Capacitor;
         const scanner = Cap && Cap.Plugins ? Cap.Plugins.BarcodeScanner : null;
         if (!scanner) { alert('⚠️ الماسح غير متاح.'); return; }
@@ -45,6 +66,8 @@
                     if (result && result.hasContent) {
                         // إضافة الباركود للعداد
                         if (!scannedItems.includes(result.content)) {
+                            playSound('success'); // صوت النجاح
+
                             scannedItems.push(result.content);
                             updateUI();
                         }
