@@ -42,6 +42,29 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync
 
+      - name: Force Bundled Model for ML Kit
+        run: |
+          # البحث عن ملف build.gradle الخاص بالتطبيق
+          APP_GRADLE="android/app/build.gradle"
+          
+          if [ -f "$APP_GRADLE" ]; then
+            echo "=== Before ==="
+            cat "$APP_GRADLE" | head -20
+            
+            # إضافة السطر في نهاية الملف (أو داخل dependencies)
+            if ! grep -q "mlkit.barcode.scanning.bundled" "$APP_GRADLE"; then
+              echo "" >> "$APP_GRADLE"
+              echo "dependencies {" >> "$APP_GRADLE"
+              echo "    implementation 'com.google.mlkit:barcode-scanning:17.2.0'" >> "$APP_GRADLE"
+              echo "}" >> "$APP_GRADLE"
+            fi
+            
+            echo "=== After ==="
+            cat "$APP_GRADLE" | tail -20
+          else
+            echo "❌ build.gradle not found"
+          fi
+
       - name: Add Android permissions
         run: |
           MANIFEST="android/app/src/main/AndroidManifest.xml"
