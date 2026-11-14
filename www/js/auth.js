@@ -867,10 +867,8 @@ async function resetPassword() {
 function checkAdminAccess() {
     const user = auth.currentUser;
     if (user && user.email && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
-        const adminNavBtn = document.getElementById('adminNavBtn');
         const adminDropBtn = document.getElementById('adminDropBtn');
         const adminNotifBtn = document.getElementById('adminNotifBtn');
-        if (adminNavBtn) adminNavBtn.style.display = 'block';
         if (adminDropBtn) adminDropBtn.style.display = 'block';
         if (adminNotifBtn) adminNotifBtn.style.display = 'block';
         console.log('تم تفعيل وضع المدير');
