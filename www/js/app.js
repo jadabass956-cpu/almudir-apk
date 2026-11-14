@@ -993,7 +993,9 @@ function applyActivityFieldsVisibility(attempt) {
         // 📷 الباركود
         const barcodeWrap = document.getElementById('matBarcodeWrap');
         if (barcodeWrap) {
-            const _showBarcode = true; // فرض إظهار الباركود
+            const _showBarcode = (typeof requiresBarcode === 'function') 
+                ? requiresBarcode() 
+                : false;
             barcodeWrap.style.display = _showBarcode ? '' : 'none';
             console.log('📷 [fields] barcode:', _showBarcode ? '✅ ظاهر' : '❌ مخفي', 
                 '(attempt=' + attempt + ')');

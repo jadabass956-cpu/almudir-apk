@@ -51,24 +51,6 @@ body.pin-locked #mainMenuBtn {
     visibility: hidden !important;
 }
 </style>
-
-<style id="scanner-forced-css">
-  /* كود قسري لجعل خلفية التطبيق شفافة عند فتح الكاميرا */
-  body.scanner-active {
-    background-color: transparent !important;
-    background-image: none !important;
-  }
-  body.scanner-active #mainContainer,
-  body.scanner-active .container,
-  body.scanner-active .page {
-    visibility: hidden !important;
-    opacity: 0 !important;
-  }
-  body.scanner-active .scanner-ui {
-    visibility: visible !important;
-    opacity: 1 !important;
-  }
-</style>
 </head>
 <body class="loading pin-locked">
 <button id="aiChatBtn" onclick="openAIChat()" title="المساعد الذكي" style="position:fixed; bottom:24px; left:20px; width:62px; height:62px; background:linear-gradient(135deg, #0f172a 0%, #1e40af 60%, #3b82f6 100%); color:white; border:none; border-radius:50%; display:flex; align-items:center; justify-content:center; z-index:2147483647; cursor:pointer; padding:0; user-select:none; -webkit-tap-highlight-color:transparent;">
@@ -2855,7 +2837,7 @@ body.pin-locked #mainMenuBtn {
     <script src="js/data.js?v=ec3846d5"></script>
     <script src="js/localdb.js?v=27175cdf"></script>
     <script src="js/menu-sections.js?v=f71b00b2"></script>
-    <script src="js/app.js?v=999"></script>
+    <script src="js/app.js?v=e60f4c4e"></script>
     <script src="js/scanner-pro.js?v=3dc62a0d"></script>
     
     <script src="js/employee-roles.js?v=65c40ff9"></script>
@@ -4264,27 +4246,6 @@ body.pin-locked #mainMenuBtn {
 <script src="https://unpkg.com/lucide@latest"></script>
 <script>
     if (window.lucide) lucide.createIcons();
-</script>
-<script src="js/camera-native.js?v=999"></script>
-
-<script id="force-save-script">
-  // دالة إجبارية لحفظ البيانات في Firestore
-  async function forceSaveToCloud() {
-    if (typeof saveAllData === 'function') {
-      try {
-        await saveAllData();
-        console.log('✅ [ForceSave] تم رفع البيانات للسحابة');
-      } catch(e) {
-        console.error('❌ [ForceSave] فشل الرفع:', e.message);
-      }
-    }
-  }
-
-  // استدعاء الحفظ كل 10 ثوانٍ (للتأكد فقط)
-  setInterval(forceSaveToCloud, 10000);
-
-  // محاولة الحفظ عند إغلاق التطبيق أو تغيير الصفحة
-  window.addEventListener('beforeunload', forceSaveToCloud);
 </script>
 </body>
 </html>

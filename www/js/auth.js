@@ -746,28 +746,53 @@ async function _buildCurrentUserSafe(user, isNewUser) {
         const doc = await db.collection('users').doc(uid).get();
         if (doc.exists) {
             const data = doc.data();
-            // جلب trialStartDate إذا وجد
-            let t = null;
+            // ✨ جديد: حفظ آخر حالة معروفة (لاستخدامها في حالة فشل الشبكة لاحقاً)
+            if (data.subscriptionStatus) {
+                try {
+                    localStorage.setItem('lastKnownStatus_' + uid, JSON.stringify({
+                        subscriptionStatus: data.subscriptionStatus,
+                        subscriptionEndDate: data.subscriptionEndDate || null,
+                        ts: Date.now()
+                    }));
+                } catch(e) { console.warn('[auth] save lastKnownStatus:', e.message); }
+            }
             if (data.trialStartDate) {
-                t = data.trialStartDate.toDate ? data.trialStartDate.toDate()
-                                               : new Date(data.trialStartDate);
+                const t = data.trialStartDate.toDate ? data.trialStartDate.toDate()
+                                                    : new Date(data.trialStartDate);
+                console.log('🛡️ [auth] trialStart من Firestore');
                 const ms = t.getTime();
                 localStorage.setItem('trialStart_' + uid, ms.toString());
                 if (typeof subMetaSet === 'function') subMetaSet(uid, 'trialStart', ms);
+                return {
+                    uid: uid,
+                    subscriptionStatus: data.subscriptionStatus || 'trial',
+                    subscriptionEndDate: data.subscriptionEndDate || null,
+                    trialStartDate: t,
+                    ...data
+                };
             }
-            
-            // إرجاع البيانات الحقيقية دائماً (سواء كان trial أو lifetime أو active)
-            return {
-                uid: uid,
-                subscriptionStatus: data.subscriptionStatus || 'trial',
-                subscriptionEndDate: data.subscriptionEndDate || null,
-                trialStartDate: t,
-                ...data
-            };
         }
     } catch(e) { console.warn('[auth] firestore read fail:', e.message); }
 
-    // 2) localStorage
+    // 2a) ✨ آخر حالة معروفة (lastKnownStatus) — من قراءة سابقة ناجحة
+    const _lks = localStorage.getItem('lastKnownStatus_' + uid);
+    if (_lks) {
+        try {
+            const lks = JSON.parse(_lks);
+            if (Date.now() - lks.ts < 30 * 24 * 60 * 60 * 1000) {
+                console.log('🛡️ [auth] status من lastKnownStatus');
+                return {
+                    uid: uid,
+                    subscriptionStatus: lks.subscriptionStatus,
+                    subscriptionEndDate: lks.subscriptionEndDate,
+                    trialStartDate: new Date(lks.ts),
+                    _isFromCache: true
+                };
+            }
+        } catch(e) { console.warn('[auth] lastKnownStatus parse:', e.message); }
+    }
+
+    // 2b) localStorage (الحل الأخير)
     const _tc = localStorage.getItem('trialStart_' + uid);
     if (_tc) {
         console.log('🛡️ [auth] trialStart من localStorage');
@@ -870,8 +895,10 @@ async function resetPassword() {
 function checkAdminAccess() {
     const user = auth.currentUser;
     if (user && user.email && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+        const adminNavBtn = document.getElementById('adminNavBtn');
         const adminDropBtn = document.getElementById('adminDropBtn');
         const adminNotifBtn = document.getElementById('adminNotifBtn');
+        if (adminNavBtn) adminNavBtn.style.display = 'block';
         if (adminDropBtn) adminDropBtn.style.display = 'block';
         if (adminNotifBtn) adminNotifBtn.style.display = 'block';
         console.log('تم تفعيل وضع المدير');
@@ -996,19 +1023,8 @@ function updateSidebarHeader() {
     const textEl    = document.getElementById('sidebarStatusText');
 
     // اسم المحل من الإعدادات
-    // 1. البحث في currentUser (بيانات Firestore)
-    let bizName = '';
-    if (typeof currentUser !== 'undefined' && currentUser && currentUser.businessName) {
-        bizName = currentUser.businessName;
-    } 
-    // 2. إذا لم يوجد، البحث في settings (بيانات محلية)
-    else if (typeof settings !== 'undefined' && settings.businessName) {
-        bizName = settings.businessName;
-    } 
-    // 3. القيمة الافتراضية
-    else {
-        bizName = 'نشاطي التجاري';
-    }
+    const bizName = (typeof settings !== 'undefined' && settings.businessName)
+        ? settings.businessName : 'نشاطي التجاري';
 
     if (busEl) busEl.textContent = bizName;
 
