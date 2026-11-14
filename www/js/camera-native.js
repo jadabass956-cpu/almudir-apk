@@ -1,27 +1,6 @@
 (function() {
     'use strict';
     window.startSaleQRScanner = async function() {
-        // دالة تشغيل الصوت
-        const playSound = (type) => {
-            try {
-                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioCtx.createOscillator();
-                const gainNode = audioCtx.createGain();
-                oscillator.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
-                
-                if (type === 'success') {
-                    oscillator.frequency.value = 1200; // صوت عالي (نجاح)
-                    gainNode.gain.value = 0.5;
-                } else {
-                    oscillator.frequency.value = 400; // صوت منخفض (خطأ)
-                    gainNode.gain.value = 0.3;
-                }
-                oscillator.start();
-                setTimeout(() => oscillator.stop(), 150);
-            } catch(e) { console.log('Audio error:', e); }
-        };
-
         const Cap = window.Capacitor;
         const scanner = Cap && Cap.Plugins ? Cap.Plugins.BarcodeScanner : null;
         if (!scanner) { alert('⚠️ الماسح غير متاح.'); return; }
@@ -34,7 +13,6 @@
             const status = await scanner.checkPermission({ force: true });
             if (status.denied) { alert('🚨 يرجى السماح بالكاميرا.'); return; }
 
-            // واجهة المسح
             const ui = document.createElement('div');
             ui.id = 'zxing-overlay';
             ui.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:99999;';
@@ -51,55 +29,46 @@
             scanner.hideBackground();
             document.body.classList.add('scanner-active');
 
-            // دالة تحديث الواجهة
             const updateUI = () => {
                 document.getElementById('scan-counter').textContent = scannedItems.length;
                 document.getElementById('zx-finish').textContent = `إنهاء المسح (${scannedItems.length})`;
             };
 
-            // دالة المسح المتسلسل
+            const playBeep = () => {
+                try {
+                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain); gain.connect(ctx.destination);
+                    osc.frequency.value = 1200; gain.gain.value = 0.5;
+                    osc.start(); setTimeout(() => osc.stop(), 150);
+                } catch(e) {}
+            };
+
             const scanLoop = async () => {
                 if (!isScanning) return;
-                
                 try {
                     const result = await scanner.startScan();
                     if (result && result.hasContent) {
-                        // إضافة الباركود للعداد
                         if (!scannedItems.includes(result.content)) {
-                            playSound('success'); // صوت النجاح
-
                             scannedItems.push(result.content);
                             updateUI();
+                            playBeep();
                         }
                     }
-                } catch (e) {
-                    console.warn('Scan error:', e);
-                }
-
-                // إعادة فتح الكاميرا فوراً (بدون انتظار)
-                if (isScanning) {
-                    scanLoop();
-                }
+                } catch (e) { console.warn(e); }
+                if (isScanning) scanLoop();
             };
-
-            // بدء الحلقة
             scanLoop();
 
-            // زر الفلاش
             document.getElementById('zx-flash').onclick = async () => {
                 try {
-                    if (flashOn) {
-                        await scanner.disableTorch();
-                        document.getElementById('zx-flash').style.background = 'rgba(0,0,0,0.6)';
-                    } else {
-                        await scanner.enableTorch();
-                        document.getElementById('zx-flash').style.background = '#e67e22';
-                    }
+                    if (flashOn) { await scanner.disableTorch(); document.getElementById('zx-flash').style.background = 'rgba(0,0,0,0.6)'; }
+                    else { await scanner.enableTorch(); document.getElementById('zx-flash').style.background = '#e67e22'; }
                     flashOn = !flashOn;
                 } catch(e) { alert('الفلاش غير مدعوم.'); }
             };
 
-            // زر الإنهاء
             document.getElementById('zx-finish').onclick = async () => {
                 isScanning = false;
                 try { await scanner.stopScan(); } catch(e) {}
@@ -107,16 +76,11 @@
                 scanner.showBackground();
                 document.body.classList.remove('scanner-active');
                 ui.remove();
-                
-                if (scannedItems.length > 0) {
-                    // معالجة النتيجة
-                    if (typeof handleSaleQR === 'function') {
-                        scannedItems.forEach(code => handleSaleQR(code));
-                    }
+                if (scannedItems.length > 0 && typeof handleSaleQR === 'function') {
+                    scannedItems.forEach(code => handleSaleQR(code));
                 }
             };
 
-            // زر الإلغاء
             document.getElementById('zx-cancel').onclick = async () => {
                 isScanning = false;
                 try { await scanner.stopScan(); } catch(e) {}
@@ -135,5 +99,4 @@
         }
     };
     window.startMaterialQRScanner = window.startSaleQRScanner;
-    console.log('✅ Multi-Scan Camera (Loop) Ready');
 })();

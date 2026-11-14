@@ -42,27 +42,40 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync
 
+      - name: Register BarcodeScanner Plugin (Manual)
+        run: |
+          PLUGINS_JSON="android/app/src/main/assets/capacitor.plugins.json"
+          mkdir -p "$(dirname "$PLUGINS_JSON")"
+          if [ ! -f "$PLUGINS_JSON" ]; then echo "[]" > "$PLUGINS_JSON"; fi
+          if ! grep -q "BarcodeScannerPlugin" "$PLUGINS_JSON"; then
+            python3 -c "import json; p='android/app/src/main/assets/capacitor.plugins.json'; d=json.load(open(p)); d.append({'pkg':'@capacitor-mlkit/barcode-scanning','classpath':'io.capawesome.capacitorjs.plugins.mlkit.barcodescanning.BarcodeScannerPlugin'}); json.dump(d, open(p,'w'), indent=2)"
+          fi
+          echo "=== capacitor.plugins.json ==="
+          cat "$PLUGINS_JSON"
+
+          MAIN_ACT="android/app/src/main/java/com/jasoft/almudir/MainActivity.java"
+          if [ -f "$MAIN_ACT" ]; then
+            if ! grep -q "BarcodeScannerPlugin" "$MAIN_ACT"; then
+              sed -i '1i import io.capawesome.capacitorjs.plugins.mlkit.barcodescanning.BarcodeScannerPlugin;' "$MAIN_ACT"
+              sed -i 's|super.onCreate(savedInstanceState);|registerPlugin(BarcodeScannerPlugin.class);\n        super.onCreate(savedInstanceState);|' "$MAIN_ACT"
+              echo "✅ MainActivity patched"
+            fi
+            echo "=== MainActivity.java ==="
+            cat "$MAIN_ACT"
+          fi
+
       - name: Force Bundled Model for ML Kit
         run: |
-          # البحث عن ملف build.gradle الخاص بالتطبيق
           APP_GRADLE="android/app/build.gradle"
-          
           if [ -f "$APP_GRADLE" ]; then
-            echo "=== Before ==="
-            cat "$APP_GRADLE" | head -20
-            
-            # إضافة السطر في نهاية الملف (أو داخل dependencies)
             if ! grep -q "mlkit.barcode.scanning.bundled" "$APP_GRADLE"; then
               echo "" >> "$APP_GRADLE"
               echo "dependencies {" >> "$APP_GRADLE"
               echo "    implementation 'com.google.mlkit:barcode-scanning:17.2.0'" >> "$APP_GRADLE"
               echo "}" >> "$APP_GRADLE"
             fi
-            
-            echo "=== After ==="
+            echo "=== Gradle ==="
             cat "$APP_GRADLE" | tail -20
-          else
-            echo "❌ build.gradle not found"
           fi
 
       - name: Add Android permissions
