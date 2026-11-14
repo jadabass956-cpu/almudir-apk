@@ -36,10 +36,13 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Clean Android directory
+        run: rm -rf android/
+
       - name: Add Android platform
         run: npx cap add android
 
-      - name: Force Sync Android
+      - name: Force Sync Android Plugins
         run: npx cap sync android
 
       - name: Sync Capacitor (Force Android)
