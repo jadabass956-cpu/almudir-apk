@@ -39,8 +39,8 @@ jobs:
       - name: Add Android platform
         run: npx cap add android
 
-      - name: Sync Capacitor
-        run: npx cap sync
+      - name: Sync Capacitor (Force Android)
+        run: npx cap sync android
 
       - name: Register BarcodeScanner Plugin (Manual)
         run: |
