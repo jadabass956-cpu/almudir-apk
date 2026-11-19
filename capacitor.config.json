@@ -9,13 +9,9 @@
     "backgroundColor": "#00000000"
   },
   "server": {
-    "androidScheme": "https",
+    "url": "https://jasoft-8bae9.web.app",
     "cleartext": false,
-    "allowNavigation": [
-      "*.web.app",
-      "*.googleapis.com",
-      "*.firebaseio.com"
-    ]
+    "androidScheme": "https"
   },
   "plugins": {
     "CapacitorHttp": {
