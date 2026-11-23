@@ -6,12 +6,7 @@
   "android": {
     "allowMixedContent": true,
     "webContentsDebuggingEnabled": true,
-    "backgroundColor": "#00000000"
-  },
-  "server": {
-    "url": "https://jasoft-8bae9.web.app",
-    "cleartext": false,
-    "androidScheme": "https"
+    "useLegacyBridge": true
   },
   "plugins": {
     "CapacitorHttp": {
@@ -29,5 +24,10 @@
         "useBundledModel": true
       }
     }
+  },
+  "server": {
+    "url": "https://jasoft-8bae9.web.app",
+    "cleartext": true,
+    "androidScheme": "http"
   }
 }
